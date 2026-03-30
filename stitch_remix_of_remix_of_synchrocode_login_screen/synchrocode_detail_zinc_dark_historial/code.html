@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SynchroCode UI - VS Code Extension</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'vscode-bg': '#09090b',
+            'vscode-sidebar': '#09090b',
+            'vscode-activity-bar': '#09090b',
+            'vscode-status-bar': '#2e75b8',
+            'vscode-border': '#27272a',
+            'vscode-text': '#a1a1aa',
+            'vscode-text-bright': '#ffffff',
+            'vscode-selection': '#264f78',
+            'synchro-primary': '#2e75b8',
+            'synchro-bg': '#09090b',
+            'synchro-card': '#18181b',
+            'synchro-border': '#27272a',
+            'synchro-tag-red': '#450a0a',
+            'synchro-tag-red-text': '#fca5a5',
+            'synchro-tag-purple': '#3b0764',
+            'synchro-tag-purple-text': '#d8b4fe',
+            'synchro-tag-amber': '#451a03',
+            'synchro-tag-amber-text': '#fcd34d',
+            'muted-foreground': '#a1a1aa',
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+  </style>
+<style data-purpose="code-highlighting">
+    .code-keyword { color: #569cd6; }
+    .code-type { color: #4ec9b0; }
+    .code-string { color: #ce9178; }
+    .code-comment { color: #6a9955; }
+    .code-variable { color: #9cdcfe; }
+    .code-function { color: #dcdcaa; }
+    .code-line-number { color: #52525b; text-align: right; padding-right: 1.5rem; user-select: none; }
+  </style>
+</head>
+<body class="bg-vscode-bg text-vscode-text font-sans h-screen flex flex-col overflow-hidden">
+<!-- BEGIN: Main Interface Wrapper -->
+<div class="flex-1 flex overflow-hidden">
+<!-- BEGIN: Activity Bar -->
+<aside class="w-12 bg-vscode-activity-bar flex flex-col items-center py-4 space-y-4 border-r border-vscode-border" data-purpose="activity-bar">
+<div class="p-2 opacity-60 hover:opacity-100 cursor-pointer">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2l-5.5 9h11L12 2zm0 3.84L14.07 9h-4.14L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM3 21.5h8v-8H3v8zm2-6h4v4H5v-4z"></path></svg>
+</div>
+<div class="p-2 opacity-60 hover:opacity-100 cursor-pointer">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+</div>
+<div class="p-2 opacity-60 hover:opacity-100 cursor-pointer">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"></path></svg>
+</div>
+<div class="p-2 border-l-2 border-synchro-primary text-synchro-primary bg-white/5 cursor-pointer">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"></path></svg>
+</div>
+<div class="mt-auto p-2 opacity-60 hover:opacity-100 cursor-pointer">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path></svg>
+</div>
+<div class="p-2 opacity-60 hover:opacity-100 cursor-pointer pb-6">
+<svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg>
+</div>
+</aside>
+<!-- END: Activity Bar -->
+<!-- BEGIN: Plugin Sidebar (SynchroCode) -->
+<aside class="w-[350px] bg-vscode-sidebar text-vscode-text flex flex-col border-r border-vscode-border" data-purpose="synchro-sidebar">
+<!-- Sidebar Header -->
+<div class="px-4 py-3 flex items-center justify-between border-b border-vscode-border">
+<h2 class="text-xs font-bold tracking-wider text-muted-foreground uppercase">SYNCHROCODE</h2>
+<div class="flex items-center space-x-2">
+<div class="w-2 h-2 rounded-full bg-green-500"></div>
+<svg class="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<!-- Back Navigation -->
+<div class="px-4 py-4">
+<a class="text-synchro-primary text-sm flex items-center font-medium" href="#">
+<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Mis Tareas
+          </a>
+<div class="flex justify-between items-start mt-4">
+<div>
+<h1 class="text-lg font-bold leading-tight text-vscode-text-bright">Implementar Auth Middleware</h1>
+<p class="text-xs text-muted-foreground mt-1 uppercase font-semibold">SC-1024</p>
+</div>
+<button class="text-muted-foreground hover:text-vscode-text-bright">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+<!-- Tags/Badges -->
+<div class="flex flex-wrap gap-2 mt-4">
+<span class="bg-synchro-tag-red text-synchro-tag-red-text px-2 py-0.5 rounded text-[10px] font-bold flex items-center uppercase">
+<span class="mr-1">!</span> ALTA
+            </span>
+<span class="bg-synchro-tag-purple text-synchro-tag-purple-text px-2 py-0.5 rounded text-[10px] font-bold flex items-center uppercase">
+<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              EN PROCESO
+            </span>
+<span class="bg-synchro-tag-amber text-synchro-tag-amber-text px-2 py-0.5 rounded text-[10px] font-bold flex items-center uppercase">
+<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              VENCIDA
+            </span>
+</div>
+</div>
+<!-- Task Info Grid -->
+<div class="grid grid-cols-2 border-y border-vscode-border text-xs">
+<div class="p-4 border-r border-vscode-border">
+<p class="text-[10px] text-muted-foreground font-bold uppercase mb-2">PROYECTO</p>
+<div class="flex items-center">
+<svg class="w-4 h-4 mr-2 text-muted-foreground" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="font-medium text-vscode-text-bright">SynchroCode-Web</span>
+</div>
+</div>
+<div class="p-4">
+<p class="text-[10px] text-muted-foreground font-bold uppercase mb-2">RESPONSABLE</p>
+<div class="flex items-center">
+<div class="w-5 h-5 rounded-full bg-synchro-primary text-white flex items-center justify-center text-[8px] mr-2">AR</div>
+<span class="font-medium text-vscode-text-bright">Alex Rivera</span>
+</div>
+</div>
+<div class="p-4 border-t border-r border-vscode-border">
+<p class="text-[10px] text-muted-foreground font-bold uppercase mb-2">INICIO</p>
+<span class="font-medium text-vscode-text-bright">12 Oct, 2023</span>
+</div>
+<div class="p-4 border-t border-vscode-border">
+<p class="text-[10px] text-muted-foreground font-bold uppercase mb-2">LÍMITE</p>
+<span class="font-medium text-red-400 flex items-center">
+<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              25 Oct, 2023
+            </span>
+</div>
+</div>
+<!-- Repository -->
+<div class="p-4 border-b border-vscode-border">
+<p class="text-[10px] text-muted-foreground font-bold uppercase mb-2">REPOSITORIO</p>
+<a class="text-synchro-primary text-xs flex items-center" href="#">
+<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            synchrocode / backend — Ver en GitHub
+          </a>
+</div>
+<!-- Tabs -->
+<div class="flex border-b border-vscode-border text-xs font-medium">
+<button class="flex-1 py-3 text-muted-foreground hover:text-vscode-text-bright">Descripción</button>
+<button class="flex-1 py-3 text-synchro-primary border-b-2 border-synchro-primary">Historial</button>
+<button class="flex-1 py-3 text-muted-foreground hover:text-vscode-text-bright relative">
+            Evidencias
+            <span class="absolute top-2 right-2 bg-synchro-primary text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center">2</span>
+</button>
+<button class="flex-1 py-3 text-muted-foreground hover:text-vscode-text-bright">Commits</button>
+</div>
+<!-- Timeline Content -->
+<div class="p-4 bg-vscode-bg min-h-[400px]">
+<h3 class="text-[10px] text-muted-foreground font-bold uppercase mb-6">HISTORIAL DE CAMBIOS</h3>
+<div class="space-y-8 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[2px] before:bg-vscode-border" data-purpose="timeline">
+<!-- Timeline Item 1 -->
+<div class="relative pl-8">
+<div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-synchro-tag-purple text-synchro-tag-purple-text flex items-center justify-center border-2 border-vscode-bg">
+<svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="flex justify-between items-start">
+<p class="text-xs text-vscode-text">Estado → <span class="text-synchro-tag-purple-text font-bold">En Proceso</span></p>
+<span class="text-[10px] text-muted-foreground">Hace 2 h</span>
+</div>
+<p class="text-[10px] text-muted-foreground">Alex Rivera</p>
+</div>
+<!-- Timeline Item 2 -->
+<div class="relative pl-8">
+<div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-zinc-700 text-white flex items-center justify-center border-2 border-vscode-bg">
+<svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="text-xs font-medium text-vscode-text-bright">Commit vinculado</p>
+<p class="text-[11px] text-synchro-primary font-mono mt-0.5">[SC-1024] add JWT middleware skeleton</p>
+</div>
+<span class="text-[10px] text-muted-foreground">Hace 3 h</span>
+</div>
+<p class="text-[10px] text-muted-foreground">Alex Rivera • a3f2c1d</p>
+</div>
+<!-- Timeline Item 3 -->
+<div class="relative pl-8">
+<div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-synchro-primary text-white flex items-center justify-center border-2 border-vscode-bg">
+<svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="text-xs font-medium text-vscode-text-bright">Evidencia adjuntada</p>
+<p class="text-[10px] text-muted-foreground mt-0.5">architecture_v1.pdf • 340 KB</p>
+</div>
+<span class="text-[10px] text-muted-foreground">Ayer</span>
+</div>
+<p class="text-[10px] text-muted-foreground">Alex Rivera</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Buttons -->
+<div class="p-4 border-t border-vscode-border bg-vscode-sidebar space-y-2">
+<button class="w-full bg-synchro-primary hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md text-sm flex items-center justify-center transition-colors">
+<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Cambiar estado
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="w-full border border-vscode-border hover:bg-white/5 text-muted-foreground font-bold py-3 px-4 rounded-md text-sm flex items-center justify-center transition-colors">
+<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Ver en Dashboard
+        </button>
+</div>
+</aside>
+<!-- END: Plugin Sidebar -->
+<!-- BEGIN: Editor Area -->
+<main class="flex-1 flex flex-col min-w-0" data-purpose="editor">
+<!-- Tabs Bar -->
+<div class="flex bg-vscode-sidebar border-b border-vscode-border h-10 items-center overflow-x-auto">
+<div class="flex items-center px-4 py-2 bg-vscode-bg border-t border-t-synchro-primary h-full cursor-pointer min-w-max">
+<svg class="w-4 h-4 mr-2 text-synchro-primary" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"></path></svg>
+<span class="text-xs text-vscode-text-bright">task-detail-renderer.ts</span>
+<svg class="w-3 h-3 ml-4 opacity-0 group-hover:opacity-100" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" fill-rule="evenodd"></path></svg>
+</div>
+<div class="flex items-center px-4 py-2 border-r border-vscode-border opacity-50 h-full cursor-pointer min-w-max">
+<span class="text-xs">index.html</span>
+</div>
+<div class="flex items-center px-4 py-2 border-r border-vscode-border opacity-50 h-full cursor-pointer min-w-max">
+<span class="text-xs">plugin.config.ts</span>
+</div>
+</div>
+<!-- Breadcrumbs -->
+<div class="bg-vscode-bg px-4 py-1 text-[11px] text-vscode-text opacity-70 flex items-center border-b border-vscode-border/30">
+<span>src</span>
+<svg class="w-3 h-3 mx-1" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" fill-rule="evenodd"></path></svg>
+<span>components</span>
+<svg class="w-3 h-3 mx-1" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" fill-rule="evenodd"></path></svg>
+<span class="text-vscode-text-bright">task-detail-renderer.ts</span>
+</div>
+<!-- Editor Content -->
+<div class="flex-1 overflow-auto bg-vscode-bg p-4 font-mono text-[13px] leading-relaxed">
+<table class="w-full">
+<tbody><tr><td class="code-line-number">1</td><td><span class="code-keyword">import</span> {<span class="code-type">Task</span>} <span class="code-keyword">from</span> <span class="code-string">'../models/task'</span>;</td></tr>
+<tr><td class="code-line-number">2</td><td><span class="code-keyword">import</span> {<span class="code-type">PluginStore</span>} <span class="code-keyword">from</span> <span class="code-string">'@synchrocode/core'</span>;</td></tr>
+<tr><td class="code-line-number">3</td><td><span class="code-keyword">import</span> {<span class="code-type">EvidenceUploader</span>} <span class="code-keyword">from</span> <span class="code-string">'./evidence-uploader'</span>;</td></tr>
+<tr><td class="code-line-number">4</td><td></td></tr>
+<tr><td class="code-line-number">5</td><td><span class="code-keyword">export class</span> <span class="code-type">TaskDetailRenderer</span> {</td></tr>
+<tr><td class="code-line-number">6</td><td> <span class="code-keyword">private</span> <span class="code-variable">taskId</span>: <span class="code-type">string</span>;</td></tr>
+<tr><td class="code-line-number">7</td><td> <span class="code-keyword">private</span> <span class="code-variable">uploader</span>: <span class="code-type">EvidenceUploader</span>;</td></tr>
+<tr><td class="code-line-number">8</td><td></td></tr>
+<tr><td class="code-line-number">9</td><td> <span class="code-function">constructor</span>(<span class="code-variable">id</span>: <span class="code-type">string</span>) {</td></tr>
+<tr><td class="code-line-number">10</td><td> <span class="code-keyword">this</span>.<span class="code-variable">taskId</span> = <span class="code-variable">id</span>;</td></tr>
+<tr><td class="code-line-number">11</td><td> <span class="code-keyword">this</span>.<span class="code-variable">uploader</span> = <span class="code-keyword">new</span> <span class="code-type">EvidenceUploader</span>(<span class="code-variable">id</span>);</td></tr>
+<tr><td class="code-line-number">12</td><td>  }</td></tr>
+<tr><td class="code-line-number">13</td><td></td></tr>
+<tr><td class="code-line-number">14</td><td> <span class="code-keyword">public async</span> <span class="code-function">render</span>(): <span class="code-type">Promise</span>&lt;<span class="code-type">HTMLElement</span>&gt; {</td></tr>
+<tr><td class="code-line-number">15</td><td> <span class="code-keyword">const</span> <span class="code-variable">data</span> = <span class="code-keyword">await</span> <span class="code-type">PluginStore</span>.<span class="code-function">getTaskById</span>(<span class="code-keyword">this</span>.<span class="code-variable">taskId</span>);</td></tr>
+<tr><td class="code-line-number">16</td><td> <span class="code-comment">// Render description, history, evidence tabs</span></td></tr>
+<tr><td class="code-line-number">17</td><td> <span class="code-keyword">return</span> <span class="code-function">createDetailTemplate</span>(<span class="code-variable">data</span>);</td></tr>
+<tr><td class="code-line-number">18</td><td>  }</td></tr>
+<tr><td class="code-line-number">19</td><td></td></tr>
+<tr><td class="code-line-number">20</td><td> <span class="code-keyword">public async</span> <span class="code-function">uploadEvidence</span>(<span class="code-variable">file</span>: <span class="code-type">File</span>): <span class="code-type">Promise</span>&lt;<span class="code-keyword">void</span>&gt; {</td></tr>
+<tr><td class="code-line-number">21</td><td> <span class="code-keyword">await this</span>.<span class="code-variable">uploader</span>.<span class="code-function">upload</span>(<span class="code-variable">file</span>);</td></tr>
+<tr><td class="code-line-number">22</td><td>  }</td></tr>
+<tr><td class="code-line-number">23</td><td>}</td></tr>
+</tbody></table>
+</div>
+</main>
+<!-- END: Editor Area -->
+</div>
+<!-- END: Main Interface Wrapper -->
+<!-- BEGIN: Status Bar -->
+<footer class="h-6 bg-vscode-status-bar text-white text-[11px] flex items-center px-2 justify-between shrink-0" data-purpose="status-bar">
+<div class="flex items-center space-x-4">
+<div class="flex items-center hover:bg-white/10 px-1 cursor-pointer">
+<svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.5v-9l6 4.5-6 4.5z"></path></svg>
+<span>main</span>
+</div>
+<div class="flex items-center hover:bg-white/10 px-1 cursor-pointer">
+<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>0</span>
+<svg class="w-3 h-3 ml-2 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>0</span>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<span class="hover:bg-white/10 px-1 cursor-pointer">Ln 14, Col 4</span>
+<span class="hover:bg-white/10 px-1 cursor-pointer">UTF-8</span>
+<span class="hover:bg-white/10 px-1 cursor-pointer">TypeScript</span>
+<div class="flex items-center hover:bg-white/10 px-1 cursor-pointer">
+<div class="w-1.5 h-1.5 rounded-full bg-green-300 mr-2"></div>
+<span>Sincronizado</span>
+</div>
+<svg class="w-3.5 h-3.5 hover:bg-white/10 px-1 cursor-pointer" fill="currentColor" viewbox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"></path></svg>
+</div>
+</footer>
+<!-- END: Status Bar -->
+</body></html>

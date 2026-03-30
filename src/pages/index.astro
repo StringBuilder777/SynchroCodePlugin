@@ -1,11 +1,115 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const screens = [
+  {
+    category: 'Autenticación',
+    items: [
+      { title: 'Login', subtitle: 'Modo oscuro', href: '/login', theme: 'dark' },
+      { title: 'Login', subtitle: 'Modo claro', href: '/login-light', theme: 'light' },
+    ],
+  },
+  {
+    category: 'Panel de Tareas',
+    items: [
+      { title: 'Tareas', subtitle: 'Modo oscuro', href: '/tareas', theme: 'dark' },
+      { title: 'Tareas', subtitle: 'Modo claro', href: '/tareas-light', theme: 'light' },
+    ],
+  },
+  {
+    category: 'Detalle de Tarea',
+    items: [
+      { title: 'Detalle', subtitle: 'Descripción (oscuro)', href: '/tarea-detalle', theme: 'dark' },
+      { title: 'Detalle', subtitle: 'Evidencias (claro)', href: '/tarea-detalle-light', theme: 'light' },
+    ],
+  },
+  {
+    category: 'Colaboración',
+    items: [
+      { title: 'Colaborar', subtitle: 'Sesión activa (oscuro)', href: '/colaboracion', theme: 'dark' },
+      { title: 'Colaborar', subtitle: 'Control activo (claro)', href: '/colaboracion-light', theme: 'light' },
+    ],
+  },
+  {
+    category: 'Chat',
+    items: [
+      { title: 'Chat', subtitle: 'Modo oscuro', href: '/chat', theme: 'dark' },
+    ],
+  },
+  {
+    category: 'Notificaciones',
+    items: [
+      { title: 'Notificaciones', subtitle: 'Modo oscuro', href: '/notificaciones', theme: 'dark' },
+    ],
+  },
+  {
+    category: 'Cambiar Estado',
+    items: [
+      { title: 'Cambiar Estado', subtitle: 'Modo oscuro', href: '/cambiar-estado', theme: 'dark' },
+      { title: 'Cambiar Estado', subtitle: 'Modo claro', href: '/cambiar-estado-light', theme: 'light' },
+    ],
+  },
+];
 ---
+<Layout title="SynchroCode Plugin — Pantallas" theme="dark">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100%; background: #09090b; font-family: 'Inter', sans-serif; }
+    a { text-decoration: none; }
+  </style>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 
-<Layout>
-	<Welcome />
+  <div class="min-h-screen bg-[#09090b] text-white">
+    <!-- Header -->
+    <header class="border-b border-zinc-800 px-8 py-6">
+      <div class="flex items-center gap-3 mb-1">
+        <div class="w-9 h-9 bg-[#2e75b8] rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/30">
+          <svg class="w-5 h-5 text-white fill-current" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white">SynchroCode Plugin</h1>
+          <p class="text-xs text-zinc-400">Pantallas — VS Code Extension Webviews</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Screen Gallery -->
+    <main class="px-8 py-8 max-w-5xl">
+      {screens.map((group) => (
+        <section class="mb-10">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">{group.category}</h2>
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {group.items.map((screen) => (
+              <a
+                href={screen.href}
+                class="group block bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden hover:border-[#2e75b8]/60 transition-all hover:shadow-lg hover:shadow-blue-900/10"
+              >
+                <!-- Preview thumbnail placeholder -->
+                <div
+                  class={`h-28 flex items-center justify-center border-b ${screen.theme === 'dark' ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-100 border-slate-200'}`}
+                >
+                  <div class={`w-16 h-20 rounded ${screen.theme === 'dark' ? 'bg-zinc-800' : 'bg-white border border-slate-200 shadow-sm'} flex flex-col gap-1 p-2`}>
+                    <div class={`h-1.5 rounded w-8 ${screen.theme === 'dark' ? 'bg-zinc-600' : 'bg-slate-300'}`}></div>
+                    <div class={`h-1 rounded w-12 ${screen.theme === 'dark' ? 'bg-zinc-700' : 'bg-slate-200'}`}></div>
+                    <div class={`h-1 rounded w-10 ${screen.theme === 'dark' ? 'bg-zinc-700' : 'bg-slate-200'}`}></div>
+                    <div class="h-4 rounded w-full bg-[#2e75b8] mt-1 opacity-80"></div>
+                  </div>
+                </div>
+                <div class="px-3 py-2.5">
+                  <p class="text-sm font-semibold text-zinc-100 group-hover:text-white transition-colors">{screen.title}</p>
+                  <p class="text-[11px] text-zinc-500">{screen.subtitle}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </main>
+
+    <footer class="px-8 py-6 border-t border-zinc-800 text-[11px] text-zinc-600">
+      SynchroCode Plugin · {screens.reduce((a, g) => a + g.items.length, 0)} pantallas
+    </footer>
+  </div>
 </Layout>

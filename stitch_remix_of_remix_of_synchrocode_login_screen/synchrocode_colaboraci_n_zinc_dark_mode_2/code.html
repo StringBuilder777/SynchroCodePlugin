@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VS Code Collaboration Screen - Dark Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style data-purpose="custom-scrollbars">
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+  </style>
+<style data-purpose="editor-syntax">
+    .keyword { color: #c678dd; }
+    .type { color: #61afef; }
+    .string { color: #98c379; }
+    .comment { color: #5c6370; }
+    .function { color: #e06c75; }
+    .variable { color: #d19a66; }
+    .decorator { color: #c678dd; }
+  </style>
+</head>
+<body class="bg-[#09090b] text-[#a1a1aa] font-sans h-screen flex flex-col overflow-hidden">
+<!-- BEGIN: MainContainer -->
+<div class="flex flex-1 overflow-hidden" data-purpose="app-shell">
+<!-- BEGIN: ActivityBar -->
+<nav class="w-12 bg-[#09090b] border-r border-[#27272a] flex flex-col items-center py-4 space-y-4" data-purpose="activity-bar">
+<div class="text-[#a1a1aa] hover:text-white cursor-pointer">
+<svg class="h-7 w-7" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="text-[#a1a1aa] hover:text-white cursor-pointer">
+<svg class="h-7 w-7" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="text-[#a1a1aa] hover:text-white cursor-pointer">
+<svg class="h-7 w-7" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="text-[#2e75b8] border-l-2 border-[#2e75b8] pl-1 cursor-pointer">
+<svg class="h-7 w-7" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="mt-auto space-y-4 pb-2">
+<div class="text-[#a1a1aa] hover:text-white cursor-pointer">
+<svg class="h-7 w-7" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="text-[#a1a1aa] hover:text-white cursor-pointer">
+<svg class="h-7 w-7" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+</nav>
+<!-- END: ActivityBar -->
+<!-- BEGIN: Sidebar -->
+<aside class="w-[300px] bg-[#09090b] border-r border-[#27272a] flex flex-col" data-purpose="sidebar">
+<!-- Sidebar Header -->
+<div class="flex items-center px-4 py-2 border-b border-[#27272a] justify-between">
+<div class="flex items-center text-sm text-[#2e75b8] font-medium cursor-pointer">
+<svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Volver
+        </div>
+<div class="flex items-center text-[10px] text-[#a1a1aa]">
+<span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+          Realtime
+        </div>
+</div>
+<!-- Sidebar Tabs -->
+<div class="flex border-b border-[#27272a] text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider">
+<div class="flex-1 py-3 text-center border-r border-[#27272a]">Tareas</div>
+<div class="flex-1 py-3 text-center border-r border-[#27272a]">Chat</div>
+<div class="flex-1 py-3 text-center bg-[#18181b] text-[#2e75b8] border-b-2 border-[#2e75b8]">Colaborar</div>
+</div>
+<!-- Role Selection -->
+<div class="flex border-b border-[#27272a] text-[11px] font-medium text-[#a1a1aa]">
+<div class="flex-1 py-2 text-center bg-[#18181b] border-r border-[#27272a] flex items-center justify-center opacity-70">
+<svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Editor (A)
+        </div>
+<div class="flex-1 py-2 text-center bg-[#18181b] text-[#2e75b8] border-b-2 border-[#2e75b8] flex items-center justify-center">
+<svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Observador (B)
+        </div>
+</div>
+<!-- Join Session Form -->
+<div class="p-6 flex flex-col items-center text-center">
+<div class="mb-4">
+<svg class="h-10 w-10 text-[#27272a]" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<h3 class="text-sm font-semibold mb-2 text-white">Unirte a una sesión</h3>
+<p class="text-[11px] text-[#a1a1aa] mb-6 px-4 leading-relaxed">Ingresa el código que te compartió tu compañero</p>
+<div class="w-full mb-4">
+<label class="block text-[10px] text-[#a1a1aa] font-bold mb-1 uppercase tracking-tight text-left">Código de sesión</label>
+<input class="w-full bg-[#18181b] border border-[#27272a] text-center text-lg py-4 text-white placeholder-[#27272a] focus:ring-1 focus:ring-[#2e75b8] rounded-sm" placeholder="XXXX-XXXX" type="text"/>
+</div>
+<button class="w-full bg-[#2e75b8] bg-opacity-40 text-white/50 py-3 rounded-sm font-medium text-sm transition-colors cursor-not-allowed">
+          Unirme a la sesión
+        </button>
+<p class="mt-4 text-[10px] text-[#a1a1aa]">Solo miembros del proyecto pueden unirse</p>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: EditorArea -->
+<main class="flex-1 flex flex-col bg-[#09090b] overflow-hidden" data-purpose="editor-main">
+<!-- Editor Header & Tabs -->
+<div class="flex bg-[#09090b] border-b border-[#27272a]">
+<div class="flex items-center px-4 py-2 bg-[#18181b] border-r border-[#27272a] border-t-2 border-t-[#2e75b8] text-xs text-white">
+<span class="text-[#2e75b8] mr-2">
+<svg class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+          middleware.ts
+          <span class="ml-3 text-[#a1a1aa] hover:text-white cursor-pointer">
+<svg class="h-3 w-3" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+</div>
+<div class="ml-auto flex items-center px-4 space-x-2 text-[11px]">
+<span class="flex items-center text-green-400">
+<span class="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
+            Transmitiendo a 1 observador
+          </span>
+</div>
+</div>
+<!-- Breadcrumbs -->
+<div class="px-4 py-1 text-[11px] text-[#a1a1aa] bg-[#09090b] border-b border-[#27272a] flex items-center space-x-1">
+<span>src</span>
+<svg class="h-3 w-3" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>middleware</span>
+<svg class="h-3 w-3" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="flex items-center text-white">
+<svg class="h-3 w-3 mr-1 text-[#2e75b8]" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          middleware.ts
+        </span>
+</div>
+<!-- Code Editor Content -->
+<div class="flex-1 overflow-auto p-4 font-mono text-[13px] leading-relaxed flex bg-[#09090b]" data-purpose="code-content">
+<!-- Line Numbers -->
+<div class="w-10 text-right pr-4 text-[#3f3f46] select-none">
+          1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11<br/>12<br/>13<br/>14
+        </div>
+<!-- Code -->
+<div class="flex-1 text-gray-300">
+<div><span class="keyword">import</span>{<span class="type">JWTPayload</span>}<span class="keyword">from</span><span class="string">'@types/jwt'</span>;</div>
+<div><span class="keyword">import</span>{<span class="type">ContainerRequestContext</span>}<span class="keyword">from</span><span class="string">'quarkus-core'</span>;</div>
+<div> </div>
+<div class="comment">// CU-036 - JWT Middleware</div>
+<div><span class="decorator">@Provider</span></div>
+<div><span class="keyword">public class</span> <span class="type">JwtMiddleware</span> <span class="keyword">implements</span> <span class="type">ContainerRequestFilter</span>{</div>
+<div>  <span class="decorator">@Override</span></div>
+<div>  <span class="keyword">public void</span> <span class="function">filter</span>(<span class="type">ContainerRequestContext</span> <span class="variable">ctx</span>) {</div>
+<div>    <span class="keyword">final</span> <span class="type">String</span> <span class="variable">token</span>=<span class="variable">ctx</span>.<span class="function">getHeaderString</span>(<span class="string">"Authorization"</span>);</div>
+<div>    <span class="keyword">if</span>(<span class="variable">token</span>==<span class="keyword">null</span>) {</div>
+<div>      <span class="variable">ctx</span>.<span class="function">abortWith</span>(<span class="type">Response</span>.<span class="function">status</span>(<span class="variable">401</span>).<span class="function">build</span>());</div>
+<div>    }</div>
+<div>  }</div>
+<div>}</div>
+</div>
+</div>
+</main>
+<!-- END: EditorArea -->
+</div>
+<!-- END: MainContainer -->
+<!-- BEGIN: StatusBar -->
+<footer class="h-6 bg-[#2e75b8] text-white flex items-center px-3 text-[11px] justify-between" data-purpose="status-bar">
+<div class="flex items-center space-x-3">
+<div class="flex items-center hover:bg-white/20 px-1 cursor-pointer">
+<svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+        main
+      </div>
+</div>
+<div class="flex items-center space-x-4">
+<div class="flex items-center">
+<span class="w-2 h-2 bg-green-300 rounded-full mr-1.5"></span>
+        Colaborando · SC4F-9X2K
+      </div>
+<div class="hover:bg-white/20 px-1 cursor-pointer">TypeScript</div>
+</div>
+</footer>
+<!-- END: StatusBar -->
+</body></html>

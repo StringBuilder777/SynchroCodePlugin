@@ -1,0 +1,90 @@
+---
+/**
+ * PluginLayout — Layout de producción para el webview de VS Code.
+ * Sin frame decorativo. VS Code provee la sidebar nativa.
+ * Navegación via postMessage ↔ extension.ts
+ */
+interface Props {
+  title?: string;
+  theme?: 'dark' | 'light';
+}
+const { title = 'SynchroCode', theme = 'dark' } = Astro.props;
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="es" class={theme}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body {
+        margin: 0; padding: 0;
+        height: 100%; width: 100%;
+        font-family: 'Inter', system-ui, sans-serif;
+        overflow: hidden;
+      }
+      #app { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+      .hide-scrollbar::-webkit-scrollbar { display: none; }
+      .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <slot />
+    </div>
+
+    <!-- Puente de navegación VS Code ↔ Webview -->
+    <script>
+      (function () {
+        // Obtiene la API de VS Code si estamos dentro del webview
+        const vscode = (typeof acquireVsCodeApi !== 'undefined')
+          ? acquireVsCodeApi()
+          : null;
+
+        /** Navega a una pantalla: en extensión usa postMessage, en dev usa el router normal */
+        window.__navigate = function (screen) {
+          if (vscode) {
+            vscode.postMessage({ command: 'navigate', screen });
+          } else {
+            window.location.href = '/plugin/' + screen;
+          }
+        };
+
+        /** Intercepta todos los <a href="/..."> internos */
+        document.addEventListener('click', function (e) {
+          const a = e.target.closest('a[href]');
+          if (!a) return;
+          const href = a.getAttribute('href');
+          if (href && href.startsWith('/') && !href.startsWith('//')) {
+            e.preventDefault();
+            // Extraer la pantalla del path: /plugin/tareas → tareas, /tareas → tareas
+            const screen = href.replace(/^\/plugin\//, '').replace(/^\//, '');
+            if (screen) window.__navigate(screen);
+          }
+        });
+
+        // Escuchar mensajes desde la extensión
+        window.addEventListener('message', function (event) {
+          const msg = event.data;
+          if (msg && msg.command === 'themeChanged') {
+            document.documentElement.classList.toggle('dark', msg.theme === 'dark');
+            document.documentElement.classList.toggle('light', msg.theme === 'light');
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

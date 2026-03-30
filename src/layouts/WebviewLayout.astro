@@ -1,0 +1,179 @@
+---
+/**
+ * WebviewLayout — Wraps the plugin sidebar in a VS Code frame for dev preview.
+ * In production the plugin renders only the <slot> content as a webview.
+ */
+interface Props {
+  title?: string;
+  theme?: 'dark' | 'light';
+  activeFile?: string;
+}
+const {
+  title = 'SynchroCode Plugin',
+  theme = 'dark',
+  activeFile = 'index.ts',
+} = Astro.props;
+
+const isDark = theme === 'dark';
+const colors = {
+  activityBar: isDark ? '#333333' : '#2c2c2c',
+  sidebar: isDark ? '#181818' : '#f3f3f3',
+  editor: isDark ? '#1e1e1e' : '#ffffff',
+  tabs: isDark ? '#252526' : '#ececec',
+  border: isDark ? '#2b2b2b' : '#e5e5e5',
+  tabText: isDark ? 'text-white' : 'text-zinc-800',
+  breadcrumb: isDark ? 'text-zinc-400' : 'text-slate-500',
+  statusBar: 'bg-[#2e75b8]',
+};
+---
+<!doctype html>
+<html lang="es" class={theme}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title} — Preview</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @import url('/src/styles/global.css');
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif; overflow: hidden; }
+      .vscode-frame { display: grid; grid-template-columns: 48px 320px 1fr; height: 100vh; overflow: hidden; }
+      .hide-scrollbar::-webkit-scrollbar { display: none; }
+      .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
+      .code-line { counter-increment: line-number; display: block; }
+      .code-line::before { content: counter(line-number); display: inline-block; width: 3rem; margin-right: 1.5rem; text-align: right; color: #858585; }
+    </style>
+    <!-- Tailwind CDN for dev preview -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#2e75b8',
+              'primary-hover': '#2563a8',
+            },
+            fontFamily: { display: ['Inter', 'sans-serif'] },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body>
+    <div class="vscode-frame">
+      <!-- Activity Bar -->
+      <div
+        class="flex flex-col items-center py-4 gap-4 border-r"
+        style={`background:${colors.activityBar}; border-color:${colors.border}`}
+      >
+        <div class="text-white cursor-pointer p-2 border-l-2 border-white">
+          <span class="material-symbols-outlined text-[28px]">bolt</span>
+        </div>
+        <div class="text-white/50 hover:text-white cursor-pointer p-2">
+          <span class="material-symbols-outlined text-[28px]">search</span>
+        </div>
+        <div class="text-white/50 hover:text-white cursor-pointer p-2">
+          <span class="material-symbols-outlined text-[28px]">account_tree</span>
+        </div>
+        <div class="text-white/50 hover:text-white cursor-pointer p-2">
+          <span class="material-symbols-outlined text-[28px]">play_arrow</span>
+        </div>
+        <div class="text-white/50 hover:text-white cursor-pointer p-2">
+          <span class="material-symbols-outlined text-[28px]">extension</span>
+        </div>
+        <div class="mt-auto flex flex-col gap-4 mb-2">
+          <div class="text-white/50 hover:text-white cursor-pointer p-2">
+            <span class="material-symbols-outlined text-[28px]">account_circle</span>
+          </div>
+          <div class="text-white/50 hover:text-white cursor-pointer p-2">
+            <span class="material-symbols-outlined text-[28px]">settings</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar — Plugin Webview Content -->
+      <div
+        class="flex flex-col overflow-hidden border-r"
+        style={`background:${colors.sidebar}; border-color:${colors.border}`}
+      >
+        <div class="px-4 py-2 flex items-center justify-between border-b" style={`border-color:${colors.border}`}>
+          <span class={`text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
+            SYNCHROCODE
+          </span>
+          <span class="material-symbols-outlined text-sm cursor-pointer" style="color: #71717a">more_horiz</span>
+        </div>
+        <!-- WEBVIEW CONTENT (plugin renders this) -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar">
+          <slot />
+        </div>
+      </div>
+
+      <!-- Editor Area (decorative context) -->
+      <div class="flex flex-col overflow-hidden" style={`background:${colors.editor}`}>
+        <!-- Tabs -->
+        <div class="flex border-b overflow-x-auto" style={`background:${colors.tabs}; border-color:${colors.border}`}>
+          <div
+            class={`flex items-center px-4 py-2 border-t-2 border-[#2e75b8] text-xs min-w-[150px] ${colors.tabText}`}
+            style={`background:${colors.editor}`}
+          >
+            <span class="material-symbols-outlined text-orange-400 text-sm mr-2">description</span>
+            <span>{activeFile}</span>
+            <span class="material-symbols-outlined text-xs ml-auto">close</span>
+          </div>
+          <div class={`flex items-center px-4 py-2 text-xs min-w-[140px] border-r cursor-pointer ${isDark ? 'text-zinc-400 hover:bg-white/5' : 'text-slate-500 hover:bg-black/5'}`} style={`border-color:${colors.border}`}>
+            <span class="material-symbols-outlined text-blue-400 text-sm mr-2">code</span>
+            <span>types.d.ts</span>
+          </div>
+        </div>
+        <!-- Breadcrumbs -->
+        <div class={`px-4 py-1 text-[11px] flex items-center gap-1 border-b ${isDark ? 'text-zinc-400' : 'text-slate-400'}`} style={`border-color:${colors.border}`}>
+          <span>src</span>
+          <span class="material-symbols-outlined text-xs">chevron_right</span>
+          <span>components</span>
+          <span class="material-symbols-outlined text-xs">chevron_right</span>
+          <span class={isDark ? 'text-white' : 'text-zinc-800'}>{activeFile}</span>
+        </div>
+        <!-- Code snippet -->
+        <div class={`flex-1 p-4 font-mono text-sm leading-6 overflow-auto ${isDark ? 'text-[#d4d4d4]' : 'text-slate-800'}`} style="counter-reset: line-number">
+          <div class="code-line"><span class={isDark ? 'text-[#c586c0]' : 'text-purple-700'}>import</span> &#123; <span class={isDark ? 'text-[#9cdcfe]' : 'text-blue-700'}>SynchroCode</span> &#125; <span class={isDark ? 'text-[#c586c0]' : 'text-purple-700'}>from</span> <span class={isDark ? 'text-[#ce9178]' : 'text-green-700'}>'@synchro/core'</span>;</div>
+          <div class="code-line"></div>
+          <div class="code-line"><span class={isDark ? 'text-[#6a9955]' : 'text-slate-500'}>// SynchroCode VS Code Plugin</span></div>
+          <div class="code-line"><span class={isDark ? 'text-[#c586c0]' : 'text-purple-700'}>async function</span> <span class={isDark ? 'text-[#dcdcaa]' : 'text-yellow-700'}>initializeSync</span>() &#123;</div>
+          <div class="code-line">  <span class={isDark ? 'text-[#c586c0]' : 'text-purple-700'}>const</span> <span class={isDark ? 'text-[#9cdcfe]' : 'text-blue-700'}>client</span> = <span class={isDark ? 'text-[#c586c0]' : 'text-purple-700'}>await</span> <span class={isDark ? 'text-[#9cdcfe]' : 'text-blue-700'}>SynchroCode</span>.<span class={isDark ? 'text-[#dcdcaa]' : 'text-yellow-700'}>connect</span>();</div>
+          <div class="code-line">  <span class={isDark ? 'text-[#9cdcfe]' : 'text-blue-700'}>console</span>.<span class={isDark ? 'text-[#dcdcaa]' : 'text-yellow-700'}>log</span>(<span class={isDark ? 'text-[#ce9178]' : 'text-green-700'}>'Connected!'</span>);</div>
+          <div class="code-line">  <span class={isDark ? 'text-[#c586c0]' : 'text-purple-700'}>return</span> <span class={isDark ? 'text-[#9cdcfe]' : 'text-blue-700'}>client</span>;</div>
+          <div class="code-line">&#125;</div>
+        </div>
+        <!-- Status Bar -->
+        <div class="bg-[#2e75b8] flex items-center px-3 py-0.5 text-[11px] text-white shrink-0">
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-1 hover:bg-white/10 px-1 cursor-pointer">
+              <span class="material-symbols-outlined text-xs">account_tree</span>
+              <span>main</span>
+            </div>
+            <div class="flex items-center gap-1 hover:bg-white/10 px-1 cursor-pointer">
+              <span class="material-symbols-outlined text-xs">sync</span>
+              <span>Sincronizando...</span>
+            </div>
+          </div>
+          <div class="ml-auto flex items-center gap-4">
+            <span>UTF-8</span>
+            <span>TypeScript JSX</span>
+            <span class="material-symbols-outlined text-xs">notifications</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

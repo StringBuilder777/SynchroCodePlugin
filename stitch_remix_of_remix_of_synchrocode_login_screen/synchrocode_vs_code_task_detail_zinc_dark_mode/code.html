@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SynchroCode VS Code Plugin</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts for UI and Code -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'vscode-bg': '#09090b',
+            'vscode-sidebar': '#09090b',
+            'vscode-activity': '#18181b',
+            'vscode-status': '#2e75b8',
+            'vscode-border': '#27272a',
+            'synchro-surface': '#18181b',
+            'synchro-text-main': '#f4f4f5',
+            'synchro-text-muted': '#a1a1aa',
+            'synchro-accent': '#2e75b8',
+            'code-keyword': '#c678dd',
+            'code-function': '#61afef',
+            'code-string': '#98c379',
+            'code-comment': '#5c6370',
+            'code-variable': '#d19a66',
+            'code-type': '#e5c07b'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+  </style>
+<style data-purpose="layout-styles">
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-color: #09090b;
+      color: #a1a1aa;
+    }
+    .app-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .activity-bar {
+      width: 48px;
+      background-color: #18181b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 10px;
+      border-right: 1px solid #27272a;
+    }
+    .side-panel {
+      width: 400px;
+      background-color: #09090b;
+      border-right: 1px solid #27272a;
+      display: flex;
+      flex-direction: column;
+      color: #f4f4f5;
+    }
+    .editor-area {
+      flex: 1;
+      background-color: #09090b;
+      display: flex;
+      flex-direction: column;
+      color: #f4f4f5;
+    }
+    .status-bar {
+      height: 22px;
+      background-color: #2e75b8;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+<!-- BEGIN: Main App Container -->
+<div class="app-container">
+<!-- BEGIN: VS Code Activity Bar -->
+<aside class="activity-bar" data-purpose="activity-bar">
+<div class="space-y-4 text-zinc-500">
+<div class="p-2 border-l-2 border-white text-white cursor-pointer"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+<div class="p-2 hover:text-white cursor-pointer"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+<div class="p-2 hover:text-white cursor-pointer"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+<div class="p-2 hover:text-white cursor-pointer"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg></div>
+<div class="p-2 hover:text-white cursor-pointer text-synchro-accent"><svg class="w-7 h-7" fill="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
+</div>
+<div class="mt-auto mb-4 space-y-4 text-zinc-500">
+<div class="p-2 hover:text-white cursor-pointer"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+<div class="p-2 hover:text-white cursor-pointer"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+</div>
+</aside>
+<!-- END: VS Code Activity Bar -->
+<!-- BEGIN: Plugin Sidebar -->
+<aside class="side-panel shadow-inner" data-purpose="synchro-sidebar">
+<!-- Header Area -->
+<div class="px-5 py-4 border-b border-vscode-border bg-vscode-sidebar">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold tracking-wider text-synchro-text-muted uppercase">SYNCHROCODE</span>
+<div class="flex space-x-1">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+<svg class="w-4 h-4 text-zinc-600" fill="currentColor" viewbox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
+</div>
+</div>
+<a class="flex items-center text-sm font-semibold text-synchro-accent mb-4" href="#">
+<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Mis Tareas
+        </a>
+<div class="flex justify-between items-start">
+<div>
+<h1 class="text-xl font-bold text-zinc-100 leading-tight">Implementar Auth Middleware</h1>
+<span class="text-xs text-synchro-text-muted font-medium">SC-1024</span>
+</div>
+<svg class="w-5 h-5 text-zinc-500 cursor-pointer" fill="currentColor" viewbox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
+</div>
+<div class="flex flex-wrap gap-2 mt-4">
+<span class="px-2 py-0.5 text-[10px] font-bold bg-red-500/10 text-red-500 border border-red-500/20 rounded flex items-center">
+<span class="w-1 h-1 rounded-full bg-red-500 mr-1.5"></span> ALTA
+          </span>
+<span class="px-2 py-0.5 text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded flex items-center">
+<svg class="w-2.5 h-2.5 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+            EN PROCESO
+          </span>
+<span class="px-2 py-0.5 text-[10px] font-bold bg-orange-500/10 text-orange-500 border border-orange-500/20 rounded flex items-center">
+<svg class="w-2.5 h-2.5 mr-1" fill="currentColor" viewbox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"></path></svg>
+            VENCIDA
+          </span>
+</div>
+</div>
+<!-- Info Grid -->
+<div class="grid grid-cols-2 border-b border-vscode-border bg-vscode-sidebar">
+<div class="p-4 border-r border-vscode-border">
+<p class="text-[10px] uppercase font-bold text-synchro-text-muted mb-1">PROYECTO</p>
+<div class="flex items-center text-xs font-semibold text-zinc-300">
+<svg class="w-3.5 h-3.5 mr-1.5 text-zinc-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            SynchroCode-Web
+          </div>
+</div>
+<div class="p-4">
+<p class="text-[10px] uppercase font-bold text-synchro-text-muted mb-1">RESPONSABLE</p>
+<div class="flex items-center text-xs font-semibold text-zinc-300">
+<div class="w-5 h-5 rounded-full bg-synchro-accent text-[10px] text-white flex items-center justify-center mr-1.5">AR</div>
+            Alex Rivera
+          </div>
+</div>
+<div class="p-4 border-r border-t border-vscode-border">
+<p class="text-[10px] uppercase font-bold text-synchro-text-muted mb-1">INICIO</p>
+<p class="text-xs font-semibold text-zinc-300">12 Oct, 2023</p>
+</div>
+<div class="p-4 border-t border-vscode-border">
+<p class="text-[10px] uppercase font-bold text-synchro-text-muted mb-1">LÍMITE</p>
+<p class="text-xs font-bold text-red-500 flex items-center">
+<svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            25 Oct, 2023
+          </p>
+</div>
+</div>
+<!-- Repository Link -->
+<div class="px-5 py-3 border-b border-vscode-border bg-zinc-900/50">
+<p class="text-[10px] uppercase font-bold text-synchro-text-muted mb-1">REPOSITORIO</p>
+<a class="text-xs font-semibold text-synchro-accent flex items-center" href="#">
+<svg class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewbox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path></svg>
+          synchrocode / backend — Ver en GitHub
+        </a>
+</div>
+<!-- Navigation Tabs -->
+<div class="flex border-b border-vscode-border bg-vscode-sidebar">
+<button class="flex-1 py-3 text-xs font-bold text-synchro-accent border-b-2 border-synchro-accent">Descripción</button>
+<button class="flex-1 py-3 text-xs font-bold text-synchro-text-muted hover:text-zinc-200 transition-colors">Historial</button>
+<button class="flex-1 py-3 text-xs font-bold text-synchro-text-muted hover:text-zinc-200 transition-colors flex items-center justify-center">
+          Evidencias <span class="ml-1.5 px-1.5 py-0.5 bg-synchro-accent text-white text-[9px] rounded-full">2</span>
+</button>
+<button class="flex-1 py-3 text-xs font-bold text-synchro-text-muted hover:text-zinc-200 transition-colors">Commits</button>
+</div>
+<!-- Description Content -->
+<div class="flex-1 overflow-y-auto p-5 bg-vscode-sidebar space-y-4">
+<div class="text-xs text-zinc-300 leading-relaxed">
+<p class="mb-3">Implementar la validación de tokens JWT en las rutas protegidas del backend. Debe manejar los siguientes casos:</p>
+<ul class="space-y-3 pl-4">
+<li class="flex items-start">
+<span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+              Validación de expiración del token.
+            </li>
+<li class="flex items-start">
+<span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+              Verificación de firma (RS256).
+            </li>
+<li class="flex items-start">
+<span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+              Inyección del usuario en el objeto de petición (Request context).
+            </li>
+<li class="flex items-start">
+<span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+              Responder 401 con mensaje estandarizado si el token es inválido o expirado.
+            </li>
+</ul>
+</div>
+</div>
+<!-- Footer Buttons -->
+<div class="p-4 bg-vscode-sidebar border-t border-vscode-border space-y-3">
+<button class="w-full py-2.5 bg-synchro-accent hover:bg-blue-700 text-white rounded-md text-sm font-semibold flex items-center justify-center shadow-sm transition-all">
+<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Cambiar estado
+          <svg class="w-3.5 h-3.5 ml-2" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" fill-rule="evenodd"></path></svg>
+</button>
+<button class="w-full py-2 bg-transparent border border-vscode-border hover:bg-zinc-800 text-synchro-text-muted rounded-md text-sm font-semibold flex items-center justify-center transition-all">
+<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Ver en Dashboard
+        </button>
+</div>
+</aside>
+<!-- END: Plugin Sidebar -->
+<!-- BEGIN: Editor Area -->
+<main class="editor-area" data-purpose="code-editor">
+<!-- Tabs Bar -->
+<div class="flex bg-zinc-900 border-b border-vscode-border">
+<div class="px-4 py-2 text-xs border-r border-vscode-border bg-vscode-bg text-zinc-100 flex items-center">
+<span class="text-blue-500 font-bold mr-2">TS</span>
+          task-detail-renderer.ts
+          <svg class="w-3 h-3 ml-3 text-zinc-500 hover:text-zinc-300 cursor-pointer" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" fill-rule="evenodd"></path></svg>
+</div>
+<div class="px-4 py-2 text-xs border-r border-vscode-border text-synchro-text-muted flex items-center cursor-pointer hover:bg-zinc-800">
+<span class="text-orange-600 font-bold mr-2">HTML</span>
+          index.html
+        </div>
+<div class="px-4 py-2 text-xs border-r border-vscode-border text-synchro-text-muted flex items-center cursor-pointer hover:bg-zinc-800">
+<span class="text-yellow-600 font-bold mr-2">JS</span>
+          plugin.config.ts
+        </div>
+</div>
+<!-- Breadcrumbs -->
+<div class="px-4 py-1.5 text-xs text-synchro-text-muted bg-vscode-bg border-b border-vscode-border flex items-center">
+        src <svg class="w-3 h-3 mx-1" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" fill-rule="evenodd"></path></svg>
+        components <svg class="w-3 h-3 mx-1" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" fill-rule="evenodd"></path></svg>
+        task-detail-renderer.ts
+      </div>
+<!-- Code Content -->
+<div class="flex-1 overflow-auto bg-vscode-bg p-4 font-mono text-[13px] leading-6 selection:bg-zinc-800">
+<div class="flex">
+<div class="w-10 text-zinc-700 pr-4 text-right select-none">
+            1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15<br/>16<br/>17<br/>18<br/>19<br/>20<br/>21<br/>22<br/>23
+          </div>
+<div class="whitespace-pre text-zinc-300">
+<span class="text-code-keyword">import</span> {<span class="text-code-variable">Task</span>} <span class="text-code-keyword">from</span> <span class="text-code-string">'../models/task'</span>;
+<span class="text-code-keyword">import</span> {<span class="text-code-variable">PluginStore</span>} <span class="text-code-keyword">from</span> <span class="text-code-string">'@synchrocode/core'</span>;
+<span class="text-code-keyword">import</span> {<span class="text-code-variable">EvidenceUploader</span>} <span class="text-code-keyword">from</span> <span class="text-code-string">'./evidence-uploader'</span>;
+
+<span class="text-code-keyword">export class</span> <span class="text-code-type">TaskDetailRenderer</span> {
+  <span class="text-code-keyword">private</span> <span class="text-code-variable">taskId</span>: <span class="text-code-type">string</span>;
+  <span class="text-code-keyword">private</span> <span class="text-code-variable">uploader</span>: <span class="text-code-type">EvidenceUploader</span>;
+
+  <span class="text-code-keyword">constructor</span>(<span class="text-code-variable">id</span>: <span class="text-code-type">string</span>) {
+    <span class="text-code-keyword">this</span>.<span class="text-code-variable">taskId</span> = <span class="text-code-variable">id</span>;
+    <span class="text-code-keyword">this</span>.<span class="text-code-variable">uploader</span> = <span class="text-code-keyword">new</span> <span class="text-code-type">EvidenceUploader</span>(<span class="text-code-variable">id</span>);
+  }
+
+  <span class="text-code-keyword">public async</span> <span class="text-code-function">render</span>(): <span class="text-code-type">Promise</span>&lt;<span class="text-code-type">HTMLElement</span>&gt; {
+    <span class="text-code-keyword">const</span> <span class="text-code-variable">data</span> = <span class="text-code-keyword">await</span> <span class="text-code-variable">PluginStore</span>.<span class="text-code-function">getTaskById</span>(<span class="text-code-keyword">this</span>.<span class="text-code-variable">taskId</span>);
+    <span class="text-code-comment">// Render description, history, evidence tabs</span>
+<span class="text-code-keyword">return</span> <span class="text-code-function">createDetailTemplate</span>(<span class="text-code-variable">data</span>);
+  }
+
+  <span class="text-code-keyword">public async</span> <span class="text-code-function">uploadEvidence</span>(<span class="text-code-variable">file</span>: <span class="text-code-type">File</span>): <span class="text-code-type">Promise</span>&lt;<span class="text-code-type">void</span>&gt; {
+    <span class="text-code-keyword">await</span> <span class="text-code-keyword">this</span>.<span class="text-code-variable">uploader</span>.<span class="text-code-function">upload</span>(<span class="text-code-variable">file</span>);
+  }
+}
+          </div>
+</div>
+</div>
+</main>
+<!-- END: Editor Area -->
+</div>
+<!-- END: Main App Container -->
+<!-- BEGIN: VS Code Status Bar -->
+<footer class="status-bar" data-purpose="status-bar">
+<div class="flex items-center space-x-4">
+<div class="flex items-center cursor-pointer hover:bg-white/10 px-1">
+<svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        main
+      </div>
+<div class="flex items-center cursor-pointer hover:bg-white/10 px-1">
+<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        0
+        <svg class="w-3 h-3 mx-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        0
+      </div>
+</div>
+<div class="flex items-center space-x-4">
+<div class="cursor-pointer hover:bg-white/10 px-1">Ln 14, Col 4</div>
+<div class="cursor-pointer hover:bg-white/10 px-1">UTF-8</div>
+<div class="cursor-pointer hover:bg-white/10 px-1">TypeScript</div>
+<div class="flex items-center cursor-pointer hover:bg-white/10 px-1">
+<span class="w-1.5 h-1.5 rounded-full bg-green-400 mr-1.5"></span>
+        Sincronizado
+      </div>
+<svg class="w-3.5 h-3.5 cursor-pointer hover:bg-white/10" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</footer>
+<!-- END: VS Code Status Bar -->
+</body></html>

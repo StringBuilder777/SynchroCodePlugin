@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Collaboration Workspace - VS Code Clone Light</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'vscode-bg': '#f6f7f8',
+            'vscode-surface': '#ffffff',
+            'vscode-sidebar': '#f3f3f3',
+            'vscode-activity': '#2c2c2c',
+            'vscode-active-tab': '#ffffff',
+            'vscode-inactive-tab': '#ececec',
+            'vscode-border': '#e2e8f0',
+            'vscode-blue': '#2e75b8',
+            'vscode-text': '#333333',
+            'vscode-text-muted': '#64748b',
+            'vscode-green': '#008000',
+            'vscode-purple': '#0000ff',
+            'vscode-orange': '#a31515',
+            'vscode-red': '#cd3131'
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styles -->
+<style data-purpose="layout-and-scrollbars">
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #f6f7f8;
+      color: #333333;
+      overflow: hidden;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 4px;
+    }
+    .code-editor {
+      font-family: 'Fira Code', 'Courier New', monospace;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col">
+<!-- BEGIN: Main Interface -->
+<main class="flex flex-1 overflow-hidden" data-purpose="ide-container">
+<!-- BEGIN: Activity Bar -->
+<nav class="w-12 bg-[#2c2c2c] flex flex-col items-center py-4 space-y-4 border-r border-vscode-border" data-purpose="activity-bar">
+<div class="text-white/60 hover:text-white cursor-pointer"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+<div class="text-white/60 hover:text-white cursor-pointer"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+<div class="text-white/60 hover:text-white cursor-pointer"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 9l3 3-3 3m5 0h3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+<div class="text-white/60 hover:text-white cursor-pointer"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+<div class="flex-1"></div>
+<div class="text-white/60 hover:text-white cursor-pointer pb-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+<div class="text-white/60 hover:text-white cursor-pointer"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+</nav>
+<!-- END: Activity Bar -->
+<!-- BEGIN: Collaboration Side Panel -->
+<aside class="w-80 bg-vscode-sidebar flex flex-col border-r border-vscode-border" data-purpose="collaboration-sidebar">
+<!-- Panel Header -->
+<div class="flex items-center justify-between px-4 py-3 border-b border-vscode-border">
+<div class="flex items-center text-vscode-blue cursor-pointer">
+<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Volver</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="flex h-2 w-2 rounded-full bg-vscode-green"></span>
+<span class="text-xs text-vscode-text-muted">Realtime</span>
+<svg class="w-4 h-4 text-vscode-text-muted" fill="currentColor" viewbox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+</div>
+</div>
+<!-- Tabs Navigation -->
+<div class="flex border-b border-vscode-border text-sm" data-purpose="tabs">
+<button class="flex-1 py-2 text-vscode-text-muted hover:text-vscode-text transition-colors">Tareas</button>
+<button class="flex-1 py-2 text-vscode-text-muted hover:text-vscode-text transition-colors">Chat</button>
+<button class="flex-1 py-2 text-vscode-text border-b-2 border-vscode-blue bg-vscode-surface font-semibold">Colaborar</button>
+</div>
+<!-- Observer Status -->
+<div class="p-4 space-y-1" data-purpose="role-selector">
+<div class="flex bg-[#e8e8e8] rounded-md p-1 border border-vscode-border">
+<button class="flex-1 py-1 text-xs text-vscode-text-muted flex items-center justify-center">
+<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Editor A (Lock)
+          </button>
+<button class="flex-1 py-1 text-xs text-vscode-text bg-vscode-surface rounded shadow-sm border border-vscode-border flex items-center justify-center">
+<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Observador B
+          </button>
+</div>
+</div>
+<!-- Current Session Summary -->
+<div class="mx-4 p-3 bg-vscode-surface rounded-lg border border-vscode-border flex items-center justify-between" data-purpose="session-info">
+<div class="flex items-center">
+<div class="w-10 h-10 rounded-full bg-vscode-bg flex items-center justify-center mr-3">
+<svg class="w-5 h-5 text-vscode-text-muted" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<h4 class="text-sm font-semibold text-vscode-text">Solo lectura</h4>
+<p class="text-[10px] text-vscode-text-muted"><span class="text-vscode-blue">Alex Rivera</span> está editando middleware.ts</p>
+</div>
+</div>
+<div class="text-[10px] font-bold text-vscode-text-muted uppercase border border-vscode-border px-1.5 py-0.5 rounded">Sin Lock</div>
+</div>
+<!-- Participants List -->
+<div class="mt-6 flex-1 px-4 overflow-y-auto custom-scrollbar" data-purpose="participants">
+<h3 class="text-[10px] font-bold text-vscode-text-muted uppercase tracking-wider mb-4">Participantes</h3>
+<div class="space-y-3">
+<!-- Participant: Alex Rivera -->
+<div class="flex items-center justify-between p-2 bg-[#eef2f5] rounded-lg">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-md bg-vscode-blue flex items-center justify-center text-xs font-bold text-white mr-3">AR</div>
+<div>
+<p class="text-sm font-medium text-vscode-text leading-none">Alex Rivera</p>
+<p class="text-[10px] text-vscode-text-muted">Programador</p>
+</div>
+</div>
+<div class="flex items-center bg-white px-2 py-1 rounded border border-vscode-green/30">
+<svg class="w-3 h-3 text-vscode-green mr-1" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" fill-rule="evenodd"></path></svg>
+<span class="text-[10px] font-bold text-vscode-green uppercase">Editando</span>
+</div>
+</div>
+<!-- Participant: Luisa García -->
+<div class="flex items-center justify-between p-2">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-md bg-teal-600 flex items-center justify-center text-xs font-bold text-white mr-3">LG</div>
+<div>
+<p class="text-sm font-medium text-vscode-text leading-none">Luisa García <span class="text-[10px] text-vscode-text-muted">(tú)</span></p>
+<p class="text-[10px] text-vscode-text-muted">Programador</p>
+</div>
+</div>
+<span class="text-[10px] text-vscode-text-muted">Solo lectura</span>
+</div>
+</div>
+<!-- Preview Section -->
+<div class="mt-6 p-3 bg-vscode-bg rounded-lg border border-vscode-border" data-purpose="mini-preview">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center text-[10px] text-vscode-text-muted">
+<svg class="w-3 h-3 text-vscode-blue mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              middleware.ts — Solo lectura
+            </div>
+<div class="flex items-center">
+<span class="w-1.5 h-1.5 bg-vscode-green rounded-full mr-1"></span>
+<span class="text-[10px] text-vscode-green">En vivo</span>
+</div>
+</div>
+<div class="text-[9px] font-mono text-vscode-text-muted space-y-1">
+<div class="flex"><span class="w-4">7</span> <span class="text-vscode-purple">@Override</span></div>
+<div class="flex"><span class="w-4">8</span> <span class="text-vscode-blue">public void</span> filter(ContainerRequestContext ctx)</div>
+<div class="flex"><span class="w-4"></span> {</div>
+<div class="flex"><span class="w-4">9</span> <span class="ml-2 text-vscode-orange">String</span> token=ctx.getH...</div>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full mt-4 py-2.5 bg-vscode-blue hover:bg-blue-600 text-white text-sm font-medium rounded-md flex items-center justify-center transition-colors shadow-sm">
+<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Solicitar control de edición
+        </button>
+<p class="text-center text-[10px] text-vscode-text-muted mt-2">Alex deberá aceptar tu solicitud</p>
+</div>
+<!-- Exit Button -->
+<div class="p-4 border-t border-vscode-border">
+<button class="w-full py-2 border border-vscode-red text-vscode-red hover:bg-vscode-red/5 text-sm font-medium rounded-md flex items-center justify-center transition-colors">
+<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Salir de la sesión
+        </button>
+</div>
+</aside>
+<!-- END: Side Panel -->
+<!-- BEGIN: Main Editor Content -->
+<section class="flex-1 flex flex-col relative bg-vscode-surface" data-purpose="editor-area">
+<!-- Top Navigation Tabs -->
+<div class="bg-vscode-sidebar flex items-center h-9 border-b border-vscode-border" data-purpose="editor-tabs">
+<div class="bg-vscode-surface px-3 py-2 text-xs flex items-center border-r border-vscode-border text-vscode-text border-t-2 border-t-vscode-blue">
+<svg class="w-3.5 h-3.5 text-vscode-blue mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          middleware.ts
+          <svg class="w-3 h-3 ml-2 text-vscode-text-muted hover:text-vscode-text" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="flex-1"></div>
+<div class="px-4 flex items-center text-[10px] text-vscode-text-muted space-x-3">
+<span class="flex items-center"><span class="w-1.5 h-1.5 bg-vscode-green rounded-full mr-1.5"></span> Lock activo · 1 observador</span>
+<div class="bg-vscode-green/10 text-vscode-green px-1.5 py-0.5 rounded border border-vscode-green/20 flex items-center">
+<svg class="w-2.5 h-2.5 mr-1" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" fill-rule="evenodd"></path></svg>
+             Tú · Editando
+          </div>
+</div>
+</div>
+<!-- File Path Bar -->
+<div class="bg-vscode-surface px-4 py-1.5 text-[10px] text-vscode-text-muted flex items-center space-x-2 border-b border-vscode-border" data-purpose="breadcrumb">
+<span>src</span>
+<svg class="w-2 h-2" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" fill-rule="evenodd"></path></svg>
+<span>middleware</span>
+<svg class="w-2 h-2" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" fill-rule="evenodd"></path></svg>
+<span class="text-vscode-text">middleware.ts</span>
+</div>
+<!-- Code Content -->
+<div class="flex-1 bg-vscode-surface p-4 overflow-auto custom-scrollbar code-editor relative" data-purpose="editor-body">
+<div class="flex h-full">
+<!-- Line Numbers -->
+<div class="w-10 flex flex-col text-[#237893] text-xs text-right pr-4 select-none opacity-50">
+<span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
+</div>
+<!-- Code -->
+<div class="text-sm font-mono whitespace-pre text-vscode-text">
+<div><span class="text-[#af00db]">import</span> {JWTPayload} <span class="text-[#af00db]">from</span> <span class="text-[#a31515]">'@types/jwt'</span>;</div>
+<div><span class="text-[#af00db]">import</span> {ContainerRequestFilter, ContainerRequestContext} <span class="text-[#af00db]">from</span> <span class="text-[#a31515]">'quarkus-core'</span>;</div>
+<div class="h-4"></div>
+<div class="text-[#008000]">// CU-031b — Lock &amp; Control Session</div>
+<div><span class="text-[#af00db]">@Provider</span></div>
+<div><span class="text-[#0000ff]">public class</span> JwtMiddleware <span class="text-[#0000ff]">implements</span> ContainerRequestFilter {</div>
+<div> <span class="text-[#af00db]">@Override</span></div>
+<div> <span class="text-[#0000ff]">public void</span> <span class="text-[#795e26]">filter</span>(ContainerRequestContext ctx) {</div>
+<div> <span class="text-[#0000ff]">final String</span> token = ctx.<span class="text-[#795e26]">getHeaderString</span>(<span class="text-[#a31515]">"Authorization"</span>);</div>
+<div> <span class="text-[#af00db]">if</span> (token == <span class="text-[#0000ff]">null</span> || !token.<span class="text-[#795e26]">startsWith</span>(<span class="text-[#a31515]">"Bearer "</span>)) {</div>
+<div>      ctx.<span class="text-[#795e26]">abortWith</span>(Response.<span class="text-[#795e26]">status</span>(<span class="text-[#ee0000]">401</span>).<span class="text-[#795e26]">entity</span>(<span class="text-[#a31515]">"Unauthorized"</span>).<span class="text-[#795e26]">build</span>());</div>
+<div>    }</div>
+<div class="text-[#008000]">    // TODO: verify RS256 signature</div>
+<div>  }</div>
+<div>}</div>
+</div>
+</div>
+<!-- Floating Remote Cursor Label -->
+<div class="absolute top-[215px] left-[320px] bg-vscode-blue text-white text-[9px] px-1.5 py-0.5 rounded-sm flex items-center shadow-md z-10" data-purpose="remote-cursor">
+          Alex Rivera
+          <div class="absolute -left-1 top-0 w-1 h-full bg-vscode-blue"></div>
+</div>
+<!-- Solo Lectura Overlay / Solicitar Control -->
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-sm z-20" data-purpose="edit-request-prompt">
+<div class="bg-vscode-surface border border-vscode-border rounded-lg shadow-2xl p-4 flex flex-col items-center">
+<div class="flex items-center space-x-2 mb-4">
+<svg class="w-5 h-5 text-vscode-text-muted" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" fill-rule="evenodd"></path></svg>
+<span class="text-sm font-medium text-vscode-text">Solo lectura</span>
+</div>
+<button class="w-full py-2.5 bg-vscode-blue hover:bg-blue-600 text-white rounded-md text-sm font-semibold transition-all">
+              Solicitar control de edición
+            </button>
+<p class="mt-2 text-[10px] text-vscode-text-muted">Alex deberá aceptar tu solicitud</p>
+</div>
+</div>
+</div>
+<!-- BEGIN: Incoming Request Notification -->
+<div class="absolute top-12 left-1/2 -translate-x-1/2 w-80 z-50 animate-bounce-subtle" data-purpose="notification-toast">
+<div class="bg-vscode-surface border border-vscode-blue shadow-lg rounded-lg p-4 border-l-4">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center">
+<div class="w-2 h-2 bg-vscode-blue rounded-full mr-2 animate-pulse"></div>
+<h5 class="text-xs font-bold text-vscode-text uppercase tracking-tight">Solicitud de control</h5>
+</div>
+<div class="text-[10px] bg-vscode-bg px-2 py-0.5 rounded text-vscode-blue border border-vscode-blue/20">22s</div>
+</div>
+<p class="text-xs text-vscode-text mb-4 text-center">
+<span class="font-bold text-vscode-text">Luisa García</span> solicita el control de edición de la sesión.
+          </p>
+<div class="flex space-x-2">
+<button class="flex-1 py-1.5 bg-vscode-blue hover:bg-blue-600 text-white text-[11px] font-bold rounded transition-colors">
+              Ceder control
+            </button>
+<button class="flex-1 py-1.5 bg-vscode-bg hover:bg-vscode-inactive-tab text-vscode-text-muted text-[11px] font-bold rounded border border-vscode-border transition-colors">
+              Rechazar
+            </button>
+</div>
+</div>
+</div>
+<!-- END: Incoming Request Notification -->
+</section>
+<!-- END: Main Editor Content -->
+</main>
+<!-- END: Main Interface -->
+<!-- BEGIN: Bottom Status Bar -->
+<footer class="h-6 bg-vscode-blue flex items-center justify-between px-3 text-[11px] text-white" data-purpose="status-bar">
+<div class="flex items-center space-x-4">
+<div class="flex items-center cursor-pointer hover:bg-white/10 px-1">
+<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        main
+      </div>
+<div class="flex items-center space-x-2 opacity-90">
+<span class="flex items-center"><svg class="w-3 h-3 mr-1" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" fill-rule="evenodd"></path></svg> 0</span>
+<span class="flex items-center"><svg class="w-3 h-3 mr-1" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" fill-rule="evenodd"></path></svg> 0</span>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div class="flex items-center opacity-90">
+<span class="w-2 h-2 bg-[#89d185] rounded-full mr-1.5 animate-pulse"></span>
+        Lock activo · SC4F-9X2K
+      </div>
+<span class="opacity-90">Java</span>
+</div>
+</footer>
+<!-- END: Bottom Status Bar -->
+<!-- JavaScript for minor interactivity/animations -->
+<script data-purpose="animations">
+    // Subtle bounce for notification
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes bounce-subtle {
+        0%, 100% { transform: translate(-50%, 0); }
+        50% { transform: translate(-50%, -5px); }
+      }
+      .animate-bounce-subtle {
+        animation: bounce-subtle 3s ease-in-out infinite;
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body></html>

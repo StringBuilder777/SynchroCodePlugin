@@ -1,0 +1,128 @@
+---
+import WebviewLayout from '../layouts/WebviewLayout.astro';
+---
+<WebviewLayout title="SynchroCode — Chat" theme="dark" activeFile="chat.panel.ts">
+  <!-- Chat (Dark) -->
+  <div class="flex flex-col h-full bg-zinc-950">
+    <!-- Header -->
+    <div class="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-950 shrink-0">
+      <a href="/tareas" class="flex items-center text-[#2e75b8] text-sm font-medium">
+        <span class="material-symbols-outlined text-[16px] mr-1">chevron_left</span>
+        Volver
+      </a>
+      <div class="flex items-center gap-2">
+        <span class="flex items-center text-xs text-zinc-400">
+          <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span> Conectado
+        </span>
+        <button class="text-zinc-400">
+          <span class="material-symbols-outlined text-[18px]">more_vert</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Project Selector -->
+    <div class="px-4 py-3 bg-zinc-950 border-b border-zinc-800 shrink-0">
+      <div class="relative flex items-center gap-2 border border-zinc-800 rounded p-2 bg-zinc-900 cursor-pointer hover:border-zinc-700 transition-colors">
+        <div class="bg-zinc-800 p-1 rounded">
+          <span class="material-symbols-outlined text-[14px] text-zinc-400">folder</span>
+        </div>
+        <span class="text-sm font-semibold flex-grow text-zinc-200">SynchroCode-Web</span>
+        <span class="material-symbols-outlined text-[16px] text-[#2e75b8]">expand_more</span>
+        <span class="bg-green-900/30 text-green-400 text-[10px] px-1.5 py-0.5 rounded font-bold">3 en línea</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="flex border-b border-zinc-800 bg-zinc-900 shrink-0">
+      <button class="flex-1 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200">Tareas</button>
+      <button class="flex-1 py-2 text-xs font-bold text-[#2e75b8] border-b-2 border-[#2e75b8] bg-zinc-950">Chat</button>
+      <button class="flex-1 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200">Colaborar</button>
+    </nav>
+
+    <!-- Messages -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-5 bg-zinc-950">
+      <!-- Message: Carlos -->
+      <div class="flex gap-2">
+        <div class="w-8 h-8 rounded bg-zinc-700 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-4">CM</div>
+        <div class="flex-grow">
+          <div class="text-[11px] text-zinc-500 mb-1">Carlos Mendoza</div>
+          <div class="bg-zinc-900 border border-zinc-800 p-3 rounded-lg text-sm text-zinc-200 inline-block max-w-[90%]">
+            ¿Alguien puede revisar el PR de auth antes del jueves? Está listo para review.
+          </div>
+          <div class="text-[9px] text-zinc-600 mt-1">10:30 AM</div>
+        </div>
+      </div>
+
+      <!-- Message: Me -->
+      <div class="flex gap-2 justify-end">
+        <div class="flex-grow text-right">
+          <div class="bg-[#2e75b8]/80 p-3 rounded-lg text-sm text-white inline-block max-w-[90%]">
+            Sí, lo veo hoy en la tarde. ¿Tiene tests?
+          </div>
+          <div class="flex items-center justify-end gap-1 mt-1">
+            <span class="text-[9px] text-zinc-600">11:15 AM</span>
+            <div class="w-5 h-5 rounded bg-[#2e75b8]/60 text-white flex items-center justify-center text-[8px] font-bold">AR</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message: Luisa -->
+      <div class="flex gap-2">
+        <div class="w-8 h-8 rounded bg-emerald-700 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-4">LG</div>
+        <div class="flex-grow">
+          <div class="text-[11px] text-zinc-500 mb-1">Luisa García</div>
+          <div class="bg-zinc-900 border border-zinc-800 p-3 rounded-lg text-sm text-zinc-200 inline-block max-w-[90%]">
+            Yo lo puedo revisar también. Déjame terminar el ticket SC-1020 primero.
+          </div>
+          <div class="text-[9px] text-zinc-600 mt-1">11:30 AM</div>
+        </div>
+      </div>
+
+      <!-- Date Divider -->
+      <div class="flex items-center py-1">
+        <div class="flex-grow border-t border-zinc-800"></div>
+        <span class="px-2 text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Hoy</span>
+        <div class="flex-grow border-t border-zinc-800"></div>
+      </div>
+
+      <!-- Message: Carlos 2 -->
+      <div class="flex gap-2">
+        <div class="w-8 h-8 rounded bg-zinc-700 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-4">CM</div>
+        <div class="flex-grow">
+          <div class="text-[11px] text-zinc-500 mb-1">Carlos Mendoza</div>
+          <div class="bg-zinc-900 border border-zinc-800 p-3 rounded-lg text-sm text-zinc-200 inline-block max-w-[90%]">
+            PR mergeado 🎉 El middleware ya está en main. Buen trabajo equipo.
+          </div>
+          <div class="text-[9px] text-zinc-600 mt-1">09:00 AM</div>
+        </div>
+      </div>
+
+      <!-- Message: Me 2 -->
+      <div class="flex gap-2 justify-end">
+        <div class="flex-grow text-right">
+          <div class="bg-[#2e75b8]/80 p-3 rounded-lg text-sm text-white inline-block max-w-[90%]">
+            Perfecto. Ahora toca el Realtime integration.
+          </div>
+          <div class="flex items-center justify-end gap-1 mt-1">
+            <span class="text-[9px] text-zinc-600">09:05 AM</span>
+            <div class="w-5 h-5 rounded bg-[#2e75b8]/60 text-white flex items-center justify-center text-[8px] font-bold">AR</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Input -->
+    <div class="p-3 border-t border-zinc-800 bg-zinc-950 shrink-0">
+      <div class="relative">
+        <textarea
+          rows="2"
+          placeholder="Enter para enviar · Shift+Enter nueva línea"
+          class="w-full border border-zinc-800 bg-zinc-900 text-zinc-200 rounded-lg text-sm p-3 pr-12 focus:ring-1 focus:ring-[#2e75b8]/50 resize-none placeholder-zinc-600 outline-none"
+        ></textarea>
+        <button class="absolute bottom-2.5 right-2.5 bg-[#2e75b8]/20 p-1.5 rounded text-[#2e75b8] hover:bg-[#2e75b8]/30 transition-colors">
+          <span class="material-symbols-outlined text-[18px]">send</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</WebviewLayout>

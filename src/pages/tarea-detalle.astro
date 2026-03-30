@@ -1,0 +1,121 @@
+---
+import WebviewLayout from '../layouts/WebviewLayout.astro';
+---
+<WebviewLayout title="SynchroCode — Detalle de Tarea" theme="dark" activeFile="task-detail-renderer.ts">
+  <!-- Task Detail (Dark) -->
+  <div class="flex flex-col h-full bg-[#09090b] text-sm">
+    <!-- Header -->
+    <div class="px-5 py-4 border-b border-zinc-800 bg-[#09090b] shrink-0">
+      <div class="flex items-center justify-between mb-3">
+        <a href="/tareas" class="flex items-center text-[#2e75b8] text-xs font-medium hover:underline">
+          <span class="material-symbols-outlined text-[16px] mr-1">chevron_left</span>
+          Mis Tareas
+        </a>
+        <button class="text-zinc-500 hover:text-zinc-300">
+          <span class="material-symbols-outlined text-[18px]">more_horiz</span>
+        </button>
+      </div>
+      <h1 class="text-base font-bold text-zinc-100 leading-tight mb-1">Implementar Auth Middleware</h1>
+      <span class="text-xs text-zinc-500 font-medium">SC-1024</span>
+      <!-- Status Badges -->
+      <div class="flex flex-wrap gap-2 mt-3">
+        <span class="px-2 py-0.5 bg-red-900/30 text-red-400 text-[10px] font-bold rounded flex items-center border border-red-800/50">
+          <span class="w-1 h-1 rounded-full bg-red-500 mr-1.5"></span> ALTA
+        </span>
+        <span class="px-2 py-0.5 bg-purple-900/30 text-purple-400 text-[10px] font-bold rounded flex items-center border border-purple-800/50">
+          <span class="material-symbols-outlined text-[12px] mr-1">refresh</span> EN PROCESO
+        </span>
+        <span class="px-2 py-0.5 bg-orange-900/30 text-orange-400 text-[10px] font-bold rounded flex items-center border border-orange-800/50">
+          <span class="material-symbols-outlined text-[12px] mr-1">schedule</span> VENCIDA
+        </span>
+      </div>
+    </div>
+
+    <!-- Info Grid -->
+    <div class="grid grid-cols-2 border-b border-zinc-800 shrink-0">
+      <div class="p-3 border-r border-zinc-800">
+        <p class="text-[10px] uppercase font-bold text-zinc-500 mb-1">PROYECTO</p>
+        <div class="flex items-center text-xs font-semibold text-zinc-300">
+          <span class="material-symbols-outlined text-[14px] mr-1 text-zinc-500">folder</span>
+          SynchroCode-Web
+        </div>
+      </div>
+      <div class="p-3">
+        <p class="text-[10px] uppercase font-bold text-zinc-500 mb-1">RESPONSABLE</p>
+        <div class="flex items-center text-xs font-semibold text-zinc-300">
+          <span class="w-4 h-4 bg-[#2e75b8] rounded-full text-[8px] flex items-center justify-center mr-1.5 text-white">AR</span>
+          Alex Rivera
+        </div>
+      </div>
+      <div class="p-3 border-r border-t border-zinc-800">
+        <p class="text-[10px] uppercase font-bold text-zinc-500 mb-1">INICIO</p>
+        <p class="text-xs font-semibold text-zinc-300">12 Oct, 2023</p>
+      </div>
+      <div class="p-3 border-t border-zinc-800">
+        <p class="text-[10px] uppercase font-bold text-zinc-500 mb-1">LÍMITE</p>
+        <p class="text-xs font-bold text-red-400 flex items-center">
+          <span class="material-symbols-outlined text-[12px] mr-1">warning</span> 25 Oct, 2023
+        </p>
+      </div>
+    </div>
+
+    <!-- Repo Link -->
+    <div class="px-5 py-3 border-b border-zinc-800 bg-zinc-900/40 shrink-0">
+      <p class="text-[10px] uppercase font-bold text-zinc-500 mb-1">REPOSITORIO</p>
+      <a href="#" class="text-xs font-semibold text-[#2e75b8] flex items-center hover:underline">
+        <svg class="w-3.5 h-3.5 mr-1.5 fill-current" viewBox="0 0 24 24">
+          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+        </svg>
+        synchrocode / backend — Ver en GitHub
+      </a>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b border-zinc-800 shrink-0">
+      <button class="flex-1 py-3 text-xs font-bold text-[#2e75b8] border-b-2 border-[#2e75b8]">Descripción</button>
+      <button class="flex-1 py-3 text-xs font-bold text-zinc-500 hover:text-zinc-200 transition-colors">Historial</button>
+      <button class="flex-1 py-3 text-xs font-bold text-zinc-500 hover:text-zinc-200 transition-colors flex items-center justify-center">
+        Evidencias <span class="ml-1.5 px-1.5 py-0.5 bg-[#2e75b8] text-white text-[9px] rounded-full">2</span>
+      </button>
+      <button class="flex-1 py-3 text-xs font-bold text-zinc-500 hover:text-zinc-200 transition-colors">Commits</button>
+    </div>
+
+    <!-- Description Content -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4">
+      <div class="text-xs text-zinc-300 leading-relaxed">
+        <p class="mb-3">Implementar la validación de tokens JWT en las rutas protegidas del backend. Debe manejar los siguientes casos:</p>
+        <ul class="space-y-3 pl-4">
+          <li class="flex items-start">
+            <span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+            Validación de expiración del token.
+          </li>
+          <li class="flex items-start">
+            <span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+            Verificación de firma (RS256).
+          </li>
+          <li class="flex items-start">
+            <span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+            Inyección del usuario en el objeto de petición (Request context).
+          </li>
+          <li class="flex items-start">
+            <span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+            Responder 401 con mensaje estandarizado si el token es inválido o expirado.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="p-4 border-t border-zinc-800 space-y-2 bg-[#09090b] shrink-0">
+      <a href="/cambiar-estado" class="w-full py-2.5 bg-[#2e75b8] hover:bg-[#2563a8] text-white rounded-md text-sm font-semibold flex items-center justify-center shadow-sm transition-all">
+        <span class="material-symbols-outlined text-[16px] mr-2">swap_horiz</span>
+        Cambiar estado
+        <span class="material-symbols-outlined text-[14px] ml-2">expand_more</span>
+      </a>
+      <button class="w-full py-2 bg-transparent border border-zinc-700 hover:bg-zinc-800 text-zinc-400 rounded-md text-sm font-semibold flex items-center justify-center transition-all">
+        <span class="material-symbols-outlined text-[16px] mr-2">open_in_new</span>
+        Ver en Dashboard
+      </button>
+    </div>
+  </div>
+</WebviewLayout>

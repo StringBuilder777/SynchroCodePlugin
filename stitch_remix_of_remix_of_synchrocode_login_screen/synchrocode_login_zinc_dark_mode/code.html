@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VS Code - SynchroCode Plugin (Dark Mode)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2e75b8",
+                        "primary-foreground": "#ffffff",
+                        "background": "#09090b",
+                        "surface": "#18181b",
+                        "border": "#27272a",
+                        "muted-foreground": "#a1a1aa",
+                        "vs-activity": "#1e1e1e",
+                        "vs-sidebar": "#181818",
+                        "vs-editor": "#1e1e1e",
+                        "vs-border": "#2b2b2b"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+        .vscode-layout {
+            display: grid;
+            grid-template-columns: 48px 350px 1fr;
+            height: 100vh;
+        }
+        .code-line {
+            counter-increment: line-number;
+        }
+        .code-line::before {
+            content: counter(line-number);
+            display: inline-block;
+            width: 3rem;
+            margin-right: 1.5rem;
+            text-align: right;
+            color: #858585;
+        }
+    </style>
+</head>
+<body class="bg-background text-white font-display">
+<div class="vscode-layout">
+<!-- Activity Bar -->
+<div class="bg-[#333333] flex flex-col items-center py-4 gap-4 border-r border-vs-border">
+<div class="text-white hover:text-white cursor-pointer p-2 border-l-2 border-white">
+<span class="material-symbols-outlined !text-[28px] fill-1">copy_all</span>
+</div>
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">search</span>
+</div>
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">account_tree</span>
+</div>
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">play_arrow</span>
+</div>
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">extension</span>
+</div>
+<div class="mt-auto flex flex-col gap-4 mb-2">
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">account_circle</span>
+</div>
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">settings</span>
+</div>
+</div>
+</div>
+<!-- Sidebar (SynchroCode Webview) -->
+<div class="bg-vs-sidebar flex flex-col border-r border-vs-border overflow-y-auto">
+<div class="px-4 py-3 flex items-center justify-between">
+<span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">SynchroCode Explorer</span>
+<span class="material-symbols-outlined text-muted-foreground text-sm cursor-pointer">more_horiz</span>
+</div>
+<!-- Webview Content Start -->
+<div class="flex-1 bg-background m-2 rounded-lg border border-border p-6 flex flex-col">
+<div class="flex flex-col items-center mb-8 pt-4">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-primary-foreground text-2xl">sync_alt</span>
+</div>
+<h2 class="text-xl font-semibold text-white">Inicia sesión</h2>
+<p class="text-xs text-muted-foreground mt-1">Sincroniza tu código en tiempo real</p>
+</div>
+<form class="space-y-4">
+<div class="space-y-2">
+<label class="text-xs font-medium text-muted-foreground ml-1">Correo electrónico</label>
+<input class="w-full bg-surface border-border text-white text-sm rounded-md focus:ring-primary focus:border-primary placeholder:text-zinc-600 py-2.5" placeholder="tu@empresa.com" type="email"/>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="text-xs font-medium text-muted-foreground ml-1">Contraseña</label>
+<a class="text-[11px] text-primary hover:underline font-medium" href="#">¿Olvidaste tu clave?</a>
+</div>
+<div class="relative">
+<input class="w-full bg-surface border-border text-white text-sm rounded-md focus:ring-primary focus:border-primary placeholder:text-zinc-600 py-2.5" placeholder="••••••••" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300" type="button">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+</div>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2.5 rounded-md transition-colors text-sm mt-2 shadow-sm" type="submit">
+                    Ingresar
+                </button>
+</form>
+<div class="relative my-8">
+<div class="absolute inset-0 flex items-center">
+<span class="w-full border-t border-border"></span>
+</div>
+<div class="relative flex justify-center text-xs uppercase">
+<span class="bg-background px-2 text-muted-foreground">o continúa con</span>
+</div>
+</div>
+<button class="w-full border border-border bg-surface hover:bg-zinc-800 text-white font-medium py-2 rounded-md transition-colors text-sm flex items-center justify-center gap-2 shadow-sm">
+<svg class="w-4 h-4 fill-current" viewbox="0 0 24 24">
+<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+</svg>
+                Continuar con GitHub
+            </button>
+<div class="mt-auto text-center pb-4">
+<p class="text-[11px] text-muted-foreground">
+                    ¿No tienes una cuenta? <a class="text-primary hover:underline font-medium" href="#">Regístrate</a>
+</p>
+</div>
+</div>
+<!-- Webview Content End -->
+</div>
+<!-- Main Editor Area -->
+<div class="bg-vs-editor flex flex-col h-full overflow-hidden">
+<!-- Tabs Bar -->
+<div class="flex bg-[#252526] border-b border-vs-border overflow-x-auto">
+<div class="flex items-center px-4 py-2 bg-vs-editor border-t-2 border-primary text-white text-xs min-w-[150px]">
+<span class="material-symbols-outlined text-orange-400 text-sm mr-2">description</span>
+<span>index.ts</span>
+<span class="material-symbols-outlined text-xs ml-auto hover:bg-white/10 p-0.5 rounded">close</span>
+</div>
+<div class="flex items-center px-4 py-2 text-muted-foreground text-xs min-w-[150px] border-r border-vs-border hover:bg-white/5 cursor-pointer">
+<span class="material-symbols-outlined text-blue-400 text-sm mr-2">code</span>
+<span>types.d.ts</span>
+<span class="material-symbols-outlined text-xs ml-auto">close</span>
+</div>
+<div class="flex items-center px-4 py-2 text-muted-foreground text-xs min-w-[150px] border-r border-vs-border hover:bg-white/5 cursor-pointer">
+<span class="material-symbols-outlined text-yellow-400 text-sm mr-2">javascript</span>
+<span>config.js</span>
+<span class="material-symbols-outlined text-xs ml-auto">close</span>
+</div>
+</div>
+<!-- Breadcrumbs -->
+<div class="px-4 py-1 text-[11px] text-muted-foreground flex items-center gap-1 bg-vs-editor border-b border-vs-border">
+<span>src</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span>components</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-white">index.ts</span>
+</div>
+<!-- Editor Content -->
+<div class="flex-1 overflow-auto p-4 font-mono text-sm leading-6 selection:bg-primary/20 text-[#d4d4d4]">
+<div class="code-line"><span class="text-[#c586c0]">import</span> { <span class="text-[#9cdcfe]">SynchroCode</span> } <span class="text-[#c586c0]">from</span> <span class="text-[#ce9178]">'@synchro/core'</span>;</div>
+<div class="code-line"><span class="text-[#c586c0]">import</span> { <span class="text-[#9cdcfe]">PluginOptions</span> } <span class="text-[#c586c0]">from</span> <span class="text-[#ce9178]">'./types'</span>;</div>
+<div class="code-line"></div>
+<div class="code-line"><span class="text-[#6a9955]">/**</span></div>
+<div class="code-line"><span class="text-[#6a9955]"> * Initialize the SynchroCode connection</span></div>
+<div class="code-line"><span class="text-[#6a9955]"> */</span></div>
+<div class="code-line"><span class="text-[#c586c0]">async function</span> <span class="text-[#dcdcaa]">initializeSync</span>(<span class="text-[#9cdcfe]">options</span>: <span class="text-[#4ec9b0]">PluginOptions</span>) {</div>
+<div class="code-line">  <span class="text-[#c586c0]">try</span> {</div>
+<div class="code-line">    <span class="text-[#c586c0]">const</span> <span class="text-[#9cdcfe]">client</span> = <span class="text-[#c586c0]">await</span> <span class="text-[#9cdcfe]">SynchroCode</span>.<span class="text-[#dcdcaa]">connect</span>({</div>
+<div class="code-line">      <span class="text-[#9cdcfe]">apiKey</span>: <span class="text-[#9cdcfe]">options</span>.<span class="text-[#9cdcfe]">token</span>,</div>
+<div class="code-line">      <span class="text-[#9cdcfe]">realtime</span>: <span class="text-[#569cd6]">true</span></div>
+<div class="code-line">    });</div>
+<div class="code-line"></div>
+<div class="code-line">    <span class="text-[#9cdcfe]">console</span>.<span class="text-[#dcdcaa]">log</span>(<span class="text-[#ce9178]">'Connected to SynchroCode server'</span>);</div>
+<div class="code-line">    <span class="text-[#c586c0]">return</span> <span class="text-[#9cdcfe]">client</span>;</div>
+<div class="code-line">  } <span class="text-[#c586c0]">catch</span> (<span class="text-[#9cdcfe]">err</span>) {</div>
+<div class="code-line">    <span class="text-[#9cdcfe]">console</span>.<span class="text-[#dcdcaa]">error</span>(<span class="text-[#ce9178]">'Sync failed:'</span>, <span class="text-[#9cdcfe]">err</span>);</div>
+<div class="code-line">  }</div>
+<div class="code-line">}</div>
+<div class="code-line"></div>
+<div class="code-line"><span class="text-[#c586c0]">export default</span> <span class="text-[#dcdcaa]">initializeSync</span>;</div>
+</div>
+<!-- Status Bar -->
+<div class="bg-primary flex items-center px-3 py-0.5 text-[11px] text-primary-foreground">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1 hover:bg-white/10 px-1 cursor-pointer">
+<span class="material-symbols-outlined text-xs">account_tree</span>
+<span>main*</span>
+</div>
+<div class="flex items-center gap-1 hover:bg-white/10 px-1 cursor-pointer">
+<span class="material-symbols-outlined text-xs">sync</span>
+<span>Synchronizing...</span>
+</div>
+</div>
+<div class="ml-auto flex items-center gap-4">
+<div class="flex items-center gap-1 hover:bg-white/10 px-1 cursor-pointer">
+<span>UTF-8</span>
+</div>
+<div class="flex items-center gap-1 hover:bg-white/10 px-1 cursor-pointer">
+<span>TypeScript JSX</span>
+</div>
+<div class="flex items-center gap-1 hover:bg-white/10 px-1 cursor-pointer">
+<span class="material-symbols-outlined text-xs">notifications</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

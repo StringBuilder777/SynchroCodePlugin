@@ -1,0 +1,59 @@
+---
+import PluginLayout from '../../layouts/PluginLayout.astro';
+---
+<PluginLayout title="SynchroCode — Notificaciones" theme="dark">
+  <div class="flex flex-col h-full bg-[#09090b]">
+    <!-- Notificaciones Popover -->
+    <div class="bg-zinc-900 border-b border-zinc-700 overflow-hidden">
+      <div class="p-3 border-b border-zinc-800 flex justify-between items-center bg-[#09090b]">
+        <h4 class="text-xs font-bold text-zinc-100">Notificaciones</h4>
+        <button class="text-[10px] text-[#2e75b8] font-medium hover:underline">Marcar todas</button>
+      </div>
+      <div class="overflow-y-auto custom-scrollbar" style="max-height: 70vh;">
+        <div class="p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
+          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-[#2e75b8]/20 text-[#2e75b8] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">check</span>
+          </div>
+          <div>
+            <p class="text-[11px] text-zinc-200 leading-snug"><span class="font-bold">Nueva tarea asignada:</span> Revisar PR #48</p>
+            <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · Hace 5 min</p>
+          </div>
+        </div>
+        <div class="p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
+          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-purple-900/20 text-purple-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">shield</span>
+          </div>
+          <div>
+            <p class="text-[11px] text-zinc-200 leading-snug">Tu rol cambió a <span class="font-bold text-zinc-100">Programador Senior</span></p>
+            <p class="text-[10px] text-zinc-500 mt-0.5">Admin · Hace 1 h</p>
+          </div>
+        </div>
+        <div class="p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
+          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-[#2e75b8]/20 text-[#2e75b8] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">check</span>
+          </div>
+          <div>
+            <p class="text-[11px] text-zinc-200 leading-snug"><span class="font-bold">Nueva tarea:</span> Documentar API Auth</p>
+            <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · Ayer</p>
+          </div>
+        </div>
+        <div class="p-3 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
+          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-yellow-900/20 text-yellow-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">alternate_email</span>
+          </div>
+          <div>
+            <p class="text-[11px] text-zinc-200 leading-snug"><span class="font-bold">Luisa García</span> te mencionó en SC-1024</p>
+            <p class="text-[10px] text-zinc-500 mt-0.5">Hace 2 días</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div class="mt-auto p-3 border-t border-zinc-800 flex items-center justify-between text-[10px] text-zinc-500">
+      <span>4 tareas · 2 en proceso</span>
+      <button onclick="window.__navigate('tareas')" class="text-[#2e75b8] font-medium flex items-center hover:underline bg-transparent border-0 cursor-pointer text-[10px]">
+        <span class="material-symbols-outlined text-[12px] mr-1">arrow_back</span>Volver
+      </button>
+    </div>
+  </div>
+</PluginLayout>

@@ -1,0 +1,9 @@
+# Excluir fuentes Astro del paquete final — solo se necesita dist/ y out/
+src/
+extension/
+stitch_remix_of_remix_of_synchrocode_login_screen/
+node_modules/
+.astro/
+**/*.map
+**/*.ts
+!out/**/*.js

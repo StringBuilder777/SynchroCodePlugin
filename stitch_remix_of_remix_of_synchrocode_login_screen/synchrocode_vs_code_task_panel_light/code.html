@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VS Code - SynchroCode Plugin (Light Mode)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2e75b8",
+                        "background-light": "#f6f7f8",
+                        "surface-light": "#ffffff",
+                        "border-light": "#e2e8f0",
+                        "muted-foreground": "#64748b",
+                        "vs-activity": "#2c2c2c",
+                        "vs-sidebar": "#f3f3f3",
+                        "vs-editor": "#ffffff",
+                        "vs-border": "#e5e5e5",
+                        "vs-tab-active": "#ffffff",
+                        "vs-tab-inactive": "#ececec"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+        .vscode-layout {
+            display: grid;
+            grid-template-columns: 48px 350px 1fr;
+            height: 100vh;
+        }
+        .code-line {
+            counter-increment: line-number;
+        }
+        .code-line::before {
+            content: counter(line-number);
+            display: inline-block;
+            width: 3rem;
+            margin-right: 1.5rem;
+            text-align: right;
+            color: #237893;
+            opacity: 0.5;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background-light text-slate-800 font-display">
+<div class="vscode-layout">
+<!-- Activity Bar -->
+<div class="bg-[#2c2c2c] flex flex-col items-center py-4 gap-4 border-r border-vs-border">
+<div class="text-white/60 hover:text-white cursor-pointer p-2 border-l-2 border-white">
+<span class="material-symbols-outlined !text-[28px] fill-1">copy_all</span>
+</div>
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">search</span>
+</div>
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">account_tree</span>
+</div>
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">play_arrow</span>
+</div>
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">extension</span>
+</div>
+<div class="mt-auto flex flex-col gap-4 mb-2">
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">account_circle</span>
+</div>
+<div class="text-white/60 hover:text-white cursor-pointer p-2">
+<span class="material-symbols-outlined !text-[28px]">settings</span>
+</div>
+</div>
+</div>
+<!-- Sidebar (SynchroCode Webview - Task List Integration) -->
+<div class="bg-vs-sidebar flex flex-col border-r border-vs-border overflow-hidden">
+<!-- Header -->
+<header class="flex items-center justify-between px-4 py-3 border-b border-vs-border bg-surface-light">
+<div class="flex items-center gap-2 overflow-hidden">
+<div class="w-7 h-7 shrink-0 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border border-primary/20">
+<img alt="Alex Rivera" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7naEmfNA8ptXpYnyyxJAhF5BABDtW_3pm7brjPgceOWv4q1vWSEHH92VFquafvD4mRQWKEixaWy79ClcssoZwMhllW9uwk7Q7XXd361qpX9f__dNLDRNRPYhT_yfAgh_t1oSnjR_WLbiMIar4438R4rvDi-zaB2RtH55cKBUYjDxpahRdvQek33WILUVJuqd4P21mo4ovj89hfAG5KJ9YNhn1J--XBzFc4N3608LMBGPlg8j4uyFuG875RoxgAcCZiUjhetE7jrYZ"/>
+</div>
+<h2 class="text-[13px] font-semibold truncate text-slate-800">Alex Rivera...</h2>
+</div>
+<div class="flex items-center gap-1">
+<button class="relative p-1.5 hover:bg-slate-200 rounded transition-colors">
+<span class="material-symbols-outlined text-[20px] text-slate-600">notifications</span>
+<span class="absolute top-1.5 right-1.5 flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+</span>
+</button>
+<button class="p-1.5 hover:bg-slate-200 rounded transition-colors text-slate-600">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Navigation Tabs -->
+<nav class="flex border-b border-vs-border px-2 bg-surface-light">
+<button class="flex-1 py-2 text-[11px] font-medium border-b-2 border-primary text-primary">
+                    Tareas
+                </button>
+<button class="flex-1 py-2 text-[11px] font-medium border-b-2 border-transparent text-muted-foreground hover:text-slate-800 transition-colors">
+                    Chat
+                </button>
+<button class="flex-1 py-2 text-[11px] font-medium border-b-2 border-transparent text-muted-foreground hover:text-slate-800 transition-colors">
+                    Colaborar
+                </button>
+</nav>
+<!-- Search & Filter Area -->
+<div class="p-3 space-y-3 bg-slate-50/50">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-[18px]">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-border-light rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all text-slate-700 placeholder:text-muted-foreground" placeholder="Buscar tarea..." type="text"/>
+</div>
+<div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+<button class="shrink-0 px-3 py-1 text-[10px] font-medium bg-primary text-white rounded-full shadow-sm">Todos</button>
+<button class="shrink-0 px-3 py-1 text-[10px] font-medium bg-white border border-border-light text-muted-foreground rounded-full hover:bg-slate-50 transition-colors">Pendiente</button>
+<button class="shrink-0 px-3 py-1 text-[10px] font-medium bg-white border border-border-light text-muted-foreground rounded-full hover:bg-slate-50 transition-colors">En Proceso</button>
+<button class="shrink-0 px-3 py-1 text-[10px] font-medium bg-white border border-border-light text-muted-foreground rounded-full hover:bg-slate-50 transition-colors">Terminada</button>
+</div>
+</div>
+<!-- Tasks List -->
+<div class="flex-1 overflow-y-auto p-3 space-y-3 hide-scrollbar bg-vs-sidebar">
+<!-- Task Card 1 (High Priority, In Progress) -->
+<div class="p-3 bg-surface-light border border-border-light rounded-lg shadow-sm hover:border-primary/50 transition-colors">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-[13px] font-semibold text-slate-800 leading-tight">Implementar Auth Middleware</h3>
+<span class="flex h-2 w-2 rounded-full bg-red-500" title="Alta Prioridad"></span>
+</div>
+<div class="text-[10px] text-muted-foreground mb-3 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">folder</span>
+<span>Project: SynchroCode-Web</span>
+</div>
+<div class="flex flex-wrap gap-2 mb-3">
+<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-red-100 text-red-700 uppercase tracking-wider">High</span>
+<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-purple-100 text-purple-700 uppercase tracking-wider">In Progress</span>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex items-center gap-1 text-[10px] text-muted-foreground">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>24 Oct 2023</span>
+</div>
+<button class="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 group">
+                            Ver detalle <span class="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Task Card 2 (Medium Priority, Pending) -->
+<div class="p-3 bg-surface-light border border-border-light rounded-lg shadow-sm hover:border-primary/50 transition-colors">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-[13px] font-semibold text-slate-800 leading-tight">Refactorizar componentes UI</h3>
+<span class="flex h-2 w-2 rounded-full bg-yellow-500" title="Media Prioridad"></span>
+</div>
+<div class="text-[10px] text-muted-foreground mb-3 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">folder</span>
+<span>Project: Design-System</span>
+</div>
+<div class="flex flex-wrap gap-2 mb-3">
+<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-yellow-100 text-yellow-700 uppercase tracking-wider">Medium</span>
+<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-blue-100 text-blue-700 uppercase tracking-wider">Pending</span>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex items-center gap-1 text-[10px] text-muted-foreground">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>28 Oct 2023</span>
+</div>
+<button class="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 group">
+                            Ver detalle <span class="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Task Card 3 (Low Priority, Finished) -->
+<div class="p-3 bg-surface-light border border-border-light rounded-lg shadow-sm opacity-80 hover:opacity-100 transition-all">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-[13px] font-semibold text-slate-800 leading-tight line-through opacity-60">Configurar entorno Docker</h3>
+<span class="flex h-2 w-2 rounded-full bg-green-500" title="Baja Prioridad"></span>
+</div>
+<div class="text-[10px] text-muted-foreground mb-3 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">folder</span>
+<span>Project: Infrastructure</span>
+</div>
+<div class="flex flex-wrap gap-2 mb-3">
+<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-green-100 text-green-700 uppercase tracking-wider">Low</span>
+<span class="px-2 py-0.5 text-[9px] font-bold rounded bg-emerald-100 text-emerald-700 uppercase tracking-wider">Finished</span>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex items-center gap-1 text-[10px] text-muted-foreground">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>20 Oct 2023</span>
+</div>
+<button class="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1 group">
+                            Ver detalle <span class="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="py-4 text-center">
+<p class="text-[10px] text-muted-foreground uppercase tracking-widest">Fin de la lista</p>
+</div>
+</div>
+<!-- Sidebar Footer -->
+<footer class="p-2 border-t border-vs-border flex items-center justify-between bg-white/50">
+<div class="flex items-center gap-1 text-[10px] text-muted-foreground">
+<span class="material-symbols-outlined text-[12px]">code</span>
+<span>v1.2.4-stable</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-[10px] text-muted-foreground">Connected</span>
+</div>
+</footer>
+</div>
+<!-- Main Editor Area -->
+<div class="bg-vs-editor flex flex-col h-full overflow-hidden">
+<!-- Tabs Bar -->
+<div class="flex bg-[#ececec] border-b border-vs-border overflow-x-auto">
+<div class="flex items-center px-4 py-2 bg-vs-editor border-t-2 border-primary text-slate-800 text-xs min-w-[150px]">
+<span class="material-symbols-outlined text-orange-600 text-sm mr-2">description</span>
+<span>index.ts</span>
+<span class="material-symbols-outlined text-xs ml-auto hover:bg-slate-200 p-0.5 rounded">close</span>
+</div>
+<div class="flex items-center px-4 py-2 text-slate-500 text-xs min-w-[150px] border-r border-vs-border hover:bg-slate-100 cursor-pointer">
+<span class="material-symbols-outlined text-blue-600 text-sm mr-2">code</span>
+<span>types.d.ts</span>
+<span class="material-symbols-outlined text-xs ml-auto">close</span>
+</div>
+<div class="flex items-center px-4 py-2 text-slate-500 text-xs min-w-[150px] border-r border-vs-border hover:bg-slate-100 cursor-pointer">
+<span class="material-symbols-outlined text-yellow-600 text-sm mr-2">javascript</span>
+<span>config.js</span>
+<span class="material-symbols-outlined text-xs ml-auto">close</span>
+</div>
+</div>
+<!-- Breadcrumbs -->
+<div class="px-4 py-1 text-[11px] text-muted-foreground flex items-center gap-1 bg-vs-editor border-b border-vs-border">
+<span>src</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span>components</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-slate-800">index.ts</span>
+</div>
+<!-- Editor Content -->
+<div class="flex-1 overflow-auto p-4 font-mono text-sm leading-6 selection:bg-primary/20 bg-background-light">
+<div class="code-line"><span class="text-purple-600">import</span> { <span class="text-blue-700">SynchroCode</span> } <span class="text-purple-600">from</span> <span class="text-green-700">'@synchro/core'</span>;</div>
+<div class="code-line"><span class="text-purple-600">import</span> { <span class="text-blue-700">PluginOptions</span> } <span class="text-purple-600">from</span> <span class="text-green-700">'./types'</span>;</div>
+<div class="code-line"></div>
+<div class="code-line"><span class="text-slate-400">/**</span></div>
+<div class="code-line"><span class="text-slate-400"> * Initialize the SynchroCode connection</span></div>
+<div class="code-line"><span class="text-slate-400"> */</span></div>
+<div class="code-line"><span class="text-purple-600">async function</span> <span class="text-blue-600">initializeSync</span>(<span class="text-orange-600">options</span>: <span class="text-blue-700">PluginOptions</span>) {</div>
+<div class="code-line">  <span class="text-purple-600">try</span> {</div>
+<div class="code-line">    <span class="text-purple-600">const</span> <span class="text-blue-600">client</span> = <span class="text-purple-600">await</span> <span class="text-blue-700">SynchroCode</span>.<span class="text-blue-600">connect</span>({</div>
+<div class="code-line">      <span class="text-slate-800">apiKey</span>: <span class="text-orange-600">options</span>.<span class="text-slate-800">token</span>,</div>
+<div class="code-line">      <span class="text-slate-800">realtime</span>: <span class="text-blue-600">true</span></div>
+<div class="code-line">    });</div>
+<div class="code-line"></div>
+<div class="code-line">    <span class="text-slate-600">console</span>.<span class="text-blue-600">log</span>(<span class="text-green-700">'Connected to SynchroCode server'</span>);</div>
+<div class="code-line">    <span class="text-purple-600">return</span> <span class="text-blue-600">client</span>;</div>
+<div class="code-line">  } <span class="text-purple-600">catch</span> (<span class="text-orange-600">err</span>) {</div>
+<div class="code-line">    <span class="text-slate-600">console</span>.<span class="text-red-600">error</span>(<span class="text-green-700">'Sync failed:'</span>, <span class="text-orange-600">err</span>);</div>
+<div class="code-line">  }</div>
+<div class="code-line">}</div>
+<div class="code-line"></div>
+<div class="code-line"><span class="text-purple-600">export default</span> <span class="text-blue-600">initializeSync</span>;</div>
+</div>
+<!-- Status Bar -->
+<div class="bg-primary flex items-center px-3 py-0.5 text-[11px] text-white">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1 hover:bg-black/10 px-1 cursor-pointer">
+<span class="material-symbols-outlined text-xs">account_tree</span>
+<span>main*</span>
+</div>
+<div class="flex items-center gap-1 hover:bg-black/10 px-1 cursor-pointer">
+<span class="material-symbols-outlined text-xs">sync</span>
+<span>Synchronizing...</span>
+</div>
+</div>
+<div class="ml-auto flex items-center gap-4">
+<div class="flex items-center gap-1 hover:bg-black/10 px-1 cursor-pointer">
+<span>UTF-8</span>
+</div>
+<div class="flex items-center gap-1 hover:bg-black/10 px-1 cursor-pointer">
+<span>TypeScript JSX</span>
+</div>
+<div class="flex items-center gap-1 hover:bg-black/10 px-1 cursor-pointer">
+<span class="material-symbols-outlined text-xs">notifications</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

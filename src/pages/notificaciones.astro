@@ -1,0 +1,114 @@
+---
+import WebviewLayout from '../layouts/WebviewLayout.astro';
+---
+<WebviewLayout title="SynchroCode — Notificaciones" theme="dark" activeFile="task-list.ts">
+  <!-- Notifications overlay (Dark) -->
+  <div class="flex flex-col h-full bg-[#09090b] relative">
+    <!-- Background: blurred task list -->
+    <div class="p-4 space-y-3 opacity-40 pointer-events-none select-none">
+      <!-- Header (blurred) -->
+      <div class="flex items-center justify-between text-xs text-zinc-500 font-medium">
+        <span>TAREAS</span>
+        <span class="material-symbols-outlined text-[16px]">expand_more</span>
+      </div>
+      <div class="bg-zinc-900 p-3 rounded-lg border border-zinc-800">
+        <h4 class="text-xs font-bold text-zinc-200">Integración Supabase Realtime</h4>
+        <p class="text-[10px] text-zinc-500 mt-1">SC-1025 • SynchroCode-Plugin</p>
+        <div class="flex items-center justify-between mt-3">
+          <div class="flex gap-1">
+            <span class="px-1.5 py-0.5 bg-red-900/30 text-red-400 text-[9px] font-bold rounded">! ALTA</span>
+            <span class="px-1.5 py-0.5 bg-zinc-800 text-zinc-400 text-[9px] font-bold rounded">PENDIENTE</span>
+          </div>
+          <span class="text-[9px] text-zinc-500">02 Nov</span>
+        </div>
+      </div>
+      <div class="bg-zinc-900 p-3 rounded-lg border border-zinc-800">
+        <h4 class="text-xs font-bold text-zinc-500 line-through">Configurar entorno de desarrollo</h4>
+        <p class="text-[10px] text-zinc-600 mt-1">SC-1018 • SynchroCode-Plugin</p>
+        <div class="flex items-center justify-between mt-3">
+          <div class="flex gap-1">
+            <span class="px-1.5 py-0.5 bg-zinc-800 text-zinc-600 text-[9px] font-bold rounded">BAJA</span>
+            <span class="px-1.5 py-0.5 bg-green-900/30 text-green-400 text-[9px] font-bold rounded">TERMINADA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications Popover (overlaid) -->
+    <div class="absolute top-4 left-4 right-4 bg-zinc-900 rounded-lg shadow-2xl border border-zinc-700 overflow-hidden z-10">
+      <!-- Popover Header -->
+      <div class="p-3 border-b border-zinc-800 flex justify-between items-center bg-[#09090b]">
+        <h4 class="text-xs font-bold text-zinc-100">Notificaciones</h4>
+        <button class="text-[10px] text-[#2e75b8] font-medium hover:underline">Marcar todas</button>
+      </div>
+
+      <!-- Notification Items -->
+      <div class="max-h-72 overflow-y-auto custom-scrollbar">
+        <!-- Item 1 — New task -->
+        <div class="p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
+          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-[#2e75b8]/20 text-[#2e75b8] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">check</span>
+          </div>
+          <div>
+            <p class="text-[11px] text-zinc-200 leading-snug">
+              <span class="font-bold">Nueva tarea asignada:</span> Revisar PR #48
+            </p>
+            <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · Hace 5 min</p>
+          </div>
+        </div>
+
+        <!-- Item 2 — Role change -->
+        <div class="p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
+          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-purple-900/20 text-purple-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">shield</span>
+          </div>
+          <div>
+            <p class="text-[11px] text-zinc-200 leading-snug">
+              Tu rol cambió a <span class="font-bold text-zinc-100">Programador Senior</span>
+            </p>
+            <p class="text-[10px] text-zinc-500 mt-0.5">Admin · Hace 1 h</p>
+          </div>
+        </div>
+
+        <!-- Item 3 — New task 2 -->
+        <div class="p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
+          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-[#2e75b8]/20 text-[#2e75b8] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">check</span>
+          </div>
+          <div>
+            <p class="text-[11px] text-zinc-200 leading-snug">
+              <span class="font-bold">Nueva tarea:</span> Documentar API Auth
+            </p>
+            <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · Ayer</p>
+          </div>
+        </div>
+
+        <!-- Item 4 — Mention -->
+        <div class="p-3 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
+          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-yellow-900/20 text-yellow-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">alternate_email</span>
+          </div>
+          <div>
+            <p class="text-[11px] text-zinc-200 leading-snug">
+              <span class="font-bold">Luisa García</span> te mencionó en SC-1024
+            </p>
+            <p class="text-[10px] text-zinc-500 mt-0.5">Hace 2 días</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="p-2.5 text-center bg-[#09090b] border-t border-zinc-800">
+        <button class="text-[10px] text-zinc-400 font-medium hover:text-zinc-200">Ver todas las notificaciones</button>
+      </div>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="mt-auto p-3 border-t border-zinc-800 flex items-center justify-between text-[10px] text-zinc-500 shrink-0">
+      <span>4 tareas · 2 en proceso</span>
+      <a href="#" class="text-[#2e75b8] font-medium flex items-center hover:underline">
+        <span class="material-symbols-outlined text-[12px] mr-1">open_in_new</span> Ver Dashboard
+      </a>
+    </div>
+  </div>
+</WebviewLayout>

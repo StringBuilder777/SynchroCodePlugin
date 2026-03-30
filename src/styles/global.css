@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* VS Code Plugin - Design Tokens */
+@theme inline {
+  /* Synchro Brand */
+  --color-primary: #2e75b8;
+  --color-primary-hover: #2563a8;
+  --color-primary-foreground: #ffffff;
+
+  /* Dark Mode (Zinc) */
+  --color-vs-bg: #09090b;
+  --color-vs-surface: #18181b;
+  --color-vs-card: #18181b;
+  --color-vs-border: #27272a;
+  --color-vs-activity: #1e1e1e;
+  --color-vs-sidebar-dark: #181818;
+  --color-vs-editor: #1e1e1e;
+  --color-vs-muted: #a1a1aa;
+
+  /* Light Mode */
+  --color-vs-bg-light: #f6f7f8;
+  --color-vs-surface-light: #ffffff;
+  --color-vs-border-light: #e2e8f0;
+  --color-vs-sidebar-light: #f3f3f3;
+  --color-vs-muted-light: #64748b;
+
+  /* Status colors */
+  --color-status-high: #ef4444;
+  --color-status-medium: #eab308;
+  --color-status-low: #22c55e;
+  --color-status-progress: #a855f7;
+  --color-status-done: #10b981;
+  --color-status-pending: #6b7280;
+}
+
+/* Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* VS Code Layout */
+.vscode-frame {
+  display: grid;
+  grid-template-columns: 48px 320px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Scrollbar */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
+
+/* Code line numbers */
+.code-line { counter-increment: line-number; }
+.code-line::before {
+  content: counter(line-number);
+  display: inline-block;
+  width: 3rem;
+  margin-right: 1.5rem;
+  text-align: right;
+  color: #858585;
+}
