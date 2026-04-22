@@ -1,0 +1,135 @@
+---
+import PluginLayout from '../../layouts/PluginLayout.astro';
+---
+<PluginLayout title="SynchroCode — Perfil" theme="dark">
+  <div class="flex flex-col h-full bg-[var(--plugin-bg)]">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-950 shrink-0">
+      <div class="flex items-center gap-2 overflow-hidden">
+        <button onclick="window.__navigate('dashboard')" class="p-1 hover:bg-zinc-800 rounded transition-colors text-zinc-400">
+          <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+        </button>
+        <h2 class="text-[13px] font-semibold truncate text-slate-200">Mi Perfil</h2>
+      </div>
+      <button onclick="window.__navigate('login')" class="p-1.5 hover:bg-red-900/20 rounded transition-colors text-red-400" title="Cerrar sesión">
+        <span class="material-symbols-outlined text-[20px]">logout</span>
+      </button>
+    </header>
+
+    <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-6">
+      
+      <!-- User Info -->
+      <div class="flex flex-col items-center py-4">
+        <div class="w-20 h-20 rounded-full bg-[#2e75b8] flex items-center justify-center text-3xl font-bold text-white shadow-lg shadow-blue-900/20 mb-3 border-4 border-zinc-900">AR</div>
+        <h3 id="userName" class="text-lg font-bold text-zinc-100">Alex Rivera</h3>
+        <p id="userRole" class="text-xs text-zinc-500 font-medium bg-zinc-800 px-2 py-0.5 rounded mt-1 uppercase tracking-wider">Programador Senior</p>
+      </div>
+
+      <!-- Settings Groups -->
+      <div class="space-y-4">
+        <div class="space-y-2">
+          <h4 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Información</h4>
+          <div class="bg-zinc-900 border border-zinc-800 rounded-lg divide-y divide-zinc-800">
+            <div class="p-3 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-[18px] text-zinc-500">mail</span>
+                <div>
+                  <p class="text-[10px] text-zinc-500 uppercase font-bold tracking-tighter">Email</p>
+                  <p id="userEmail" class="text-xs text-zinc-200">alex.rivera@synchrocode.app</p>
+                </div>
+              </div>
+            </div>
+            <div class="p-3 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-[18px] text-zinc-500">calendar_today</span>
+                <div>
+                  <p class="text-[10px] text-zinc-500 uppercase font-bold tracking-tighter">Miembro desde</p>
+                  <p id="userSince" class="text-xs text-zinc-200">Octubre 2023</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Configuración</h4>
+          <div class="bg-zinc-900 border border-zinc-800 rounded-lg divide-y divide-zinc-800">
+            <button class="w-full p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors bg-transparent border-0 cursor-pointer">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-[18px] text-zinc-500">notifications_active</span>
+                <span class="text-xs text-zinc-200">Notificaciones Push</span>
+              </div>
+              <div class="w-8 h-4 bg-[#2e75b8] rounded-full relative">
+                <div class="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div>
+              </div>
+            </button>
+            <button class="w-full p-3 flex items-center justify-between hover:bg-zinc-800 transition-colors bg-transparent border-0 cursor-pointer text-left">
+              <div class="flex items-center gap-3 text-zinc-200">
+                <span class="material-symbols-outlined text-[18px] text-zinc-500">palette</span>
+                <span class="text-xs">Tema del Plugin</span>
+              </div>
+              <span class="text-[10px] text-zinc-500 flex items-center gap-1">Auto (VS Code) <span class="material-symbols-outlined text-[14px]">chevron_right</span></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-4">
+          <button class="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 rounded-md text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-[16px]">edit</span>Editar perfil
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Navigation Footer -->
+    <footer class="p-2 border-t border-zinc-800 bg-zinc-950 flex items-center justify-around shrink-0">
+      <button onclick="window.__navigate('dashboard')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-zinc-500 hover:text-zinc-300">
+        <span class="material-symbols-outlined text-[20px]">grid_view</span>
+        <span class="text-[9px] font-medium">Dashboard</span>
+      </button>
+      <button onclick="window.__navigate('tareas')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-zinc-500 hover:text-zinc-300">
+        <span class="material-symbols-outlined text-[20px]">list_alt</span>
+        <span class="text-[9px] font-medium">Tareas</span>
+      </button>
+      <button onclick="window.__navigate('chat')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-zinc-500 hover:text-zinc-300">
+        <span class="material-symbols-outlined text-[20px]">forum</span>
+        <span class="text-[9px] font-medium">Chat</span>
+      </button>
+      <button onclick="window.__navigate('colaboracion')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-zinc-500 hover:text-zinc-300">
+        <span class="material-symbols-outlined text-[20px]">screen_share</span>
+        <span class="text-[9px] font-medium">Colab</span>
+      </button>
+    </footer>
+  </div>
+
+  <script>
+    import { usersService } from '../../lib/users';
+
+    async function loadProfile() {
+      try {
+        const me = await usersService.getMe();
+        (document.getElementById('userName') as HTMLElement).textContent = me.name;
+        (document.getElementById('userRole') as HTMLElement).textContent = me.role;
+        (document.getElementById('userEmail') as HTMLElement).textContent = me.email;
+        
+        const avatar = document.querySelector('.w-20.h-20') as HTMLElement;
+        if (avatar && me.name) {
+          const initials = me.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+          avatar.textContent = initials;
+        }
+
+        if (me.createdAt) {
+          const date = new Date(me.createdAt);
+          const formatter = new Intl.DateTimeFormat('es-MX', { month: 'long', year: 'numeric' });
+          (document.getElementById('userSince') as HTMLElement).textContent = formatter.format(date);
+        }
+      } catch (e) {
+        console.error("Error cargando perfil", e);
+      }
+    }
+
+    loadProfile();
+  </script>
+</PluginLayout>

@@ -2,58 +2,142 @@
 import PluginLayout from '../../layouts/PluginLayout.astro';
 ---
 <PluginLayout title="SynchroCode — Notificaciones" theme="dark">
-  <div class="flex flex-col h-full bg-[#09090b]">
-    <!-- Notificaciones Popover -->
-    <div class="bg-zinc-900 border-b border-zinc-700 overflow-hidden">
-      <div class="p-3 border-b border-zinc-800 flex justify-between items-center bg-[#09090b]">
-        <h4 class="text-xs font-bold text-zinc-100">Notificaciones</h4>
-        <button class="text-[10px] text-[#2e75b8] font-medium hover:underline">Marcar todas</button>
-      </div>
-      <div class="overflow-y-auto custom-scrollbar" style="max-height: 70vh;">
-        <div class="p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
-          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-[#2e75b8]/20 text-[#2e75b8] flex items-center justify-center">
-            <span class="material-symbols-outlined text-[12px]">check</span>
-          </div>
-          <div>
-            <p class="text-[11px] text-zinc-200 leading-snug"><span class="font-bold">Nueva tarea asignada:</span> Revisar PR #48</p>
-            <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · Hace 5 min</p>
-          </div>
-        </div>
-        <div class="p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
-          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-purple-900/20 text-purple-400 flex items-center justify-center">
-            <span class="material-symbols-outlined text-[12px]">shield</span>
-          </div>
-          <div>
-            <p class="text-[11px] text-zinc-200 leading-snug">Tu rol cambió a <span class="font-bold text-zinc-100">Programador Senior</span></p>
-            <p class="text-[10px] text-zinc-500 mt-0.5">Admin · Hace 1 h</p>
-          </div>
-        </div>
-        <div class="p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
-          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-[#2e75b8]/20 text-[#2e75b8] flex items-center justify-center">
-            <span class="material-symbols-outlined text-[12px]">check</span>
-          </div>
-          <div>
-            <p class="text-[11px] text-zinc-200 leading-snug"><span class="font-bold">Nueva tarea:</span> Documentar API Auth</p>
-            <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · Ayer</p>
-          </div>
-        </div>
-        <div class="p-3 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer">
-          <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-yellow-900/20 text-yellow-400 flex items-center justify-center">
-            <span class="material-symbols-outlined text-[12px]">alternate_email</span>
-          </div>
-          <div>
-            <p class="text-[11px] text-zinc-200 leading-snug"><span class="font-bold">Luisa García</span> te mencionó en SC-1024</p>
-            <p class="text-[10px] text-zinc-500 mt-0.5">Hace 2 días</p>
-          </div>
+  <div class="flex flex-col h-full bg-[var(--plugin-bg)]">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-950 shrink-0">
+      <div class="flex items-center gap-2 overflow-hidden">
+        <div class="w-7 h-7 shrink-0 rounded-full bg-[#2e75b8]/10 border border-[#2e75b8]/20 flex items-center justify-center text-xs font-bold text-[#2e75b8]">AR</div>
+        <div class="min-w-0">
+          <h2 class="text-[13px] font-semibold truncate text-slate-200">Alex Rivera</h2>
+          <p class="text-[10px] text-zinc-500 leading-none">Programador</p>
         </div>
       </div>
-    </div>
-    <!-- Footer -->
-    <div class="mt-auto p-3 border-t border-zinc-800 flex items-center justify-between text-[10px] text-zinc-500">
-      <span>4 tareas · 2 en proceso</span>
-      <button onclick="window.__navigate('tareas')" class="text-[#2e75b8] font-medium flex items-center hover:underline bg-transparent border-0 cursor-pointer text-[10px]">
-        <span class="material-symbols-outlined text-[12px] mr-1">arrow_back</span>Volver
+      <button onclick="window.__navigate('tareas')" class="flex items-center gap-1 text-[11px] text-[#2e75b8] hover:underline font-medium bg-transparent border-0 cursor-pointer">
+        <span class="material-symbols-outlined text-[16px]">arrow_back</span>Volver
+      </button>
+    </header>
+
+    <!-- Notifications Header -->
+    <div class="px-4 py-2.5 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between shrink-0">
+      <h3 class="text-[11px] font-bold text-zinc-100 uppercase tracking-wider">Notificaciones</h3>
+      <button id="markAllBtn" class="text-[10px] text-[#2e75b8] font-medium hover:underline bg-transparent border-0 cursor-pointer">
+        Marcar todas
       </button>
     </div>
+
+    <!-- Notification List -->
+    <div class="flex-1 overflow-y-auto hide-scrollbar">
+
+      <!-- Notif 1: Nueva tarea asignada (unread) -->
+      <div class="notif-item p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer" data-read="false">
+        <div class="mt-0.5 shrink-0 relative">
+          <div class="w-5 h-5 rounded-full bg-[#2e75b8]/20 text-[#2e75b8] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">task_alt</span>
+          </div>
+          <span class="unread-dot absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500"></span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[11px] text-zinc-200 leading-snug"><span class="font-bold">Nueva tarea asignada:</span> Revisar PR #48</p>
+          <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · Hace 5 min</p>
+        </div>
+      </div>
+
+      <!-- Notif 2: Cambio de rol (unread) -->
+      <div class="notif-item p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer" data-read="false">
+        <div class="mt-0.5 shrink-0 relative">
+          <div class="w-5 h-5 rounded-full bg-purple-900/20 text-purple-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">shield</span>
+          </div>
+          <span class="unread-dot absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500"></span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[11px] text-zinc-200 leading-snug">Tu rol cambió a <span class="font-bold text-zinc-100">Programador Senior</span></p>
+          <p class="text-[10px] text-zinc-500 mt-0.5">Admin · Hace 1 h</p>
+        </div>
+      </div>
+
+      <!-- Notif 3: Nueva tarea (unread) -->
+      <div class="notif-item p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer" data-read="false">
+        <div class="mt-0.5 shrink-0 relative">
+          <div class="w-5 h-5 rounded-full bg-[#2e75b8]/20 text-[#2e75b8] flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">task_alt</span>
+          </div>
+          <span class="unread-dot absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500"></span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[11px] text-zinc-200 leading-snug"><span class="font-bold">Nueva tarea:</span> Documentar API Auth</p>
+          <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · Ayer</p>
+        </div>
+      </div>
+
+      <!-- Notif 4: Mención (read) -->
+      <div class="notif-item p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer opacity-60" data-read="true">
+        <div class="mt-0.5 shrink-0">
+          <div class="w-5 h-5 rounded-full bg-yellow-900/20 text-yellow-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">alternate_email</span>
+          </div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[11px] text-zinc-400 leading-snug"><span class="font-bold">Luisa García</span> te mencionó en SC-1024</p>
+          <p class="text-[10px] text-zinc-500 mt-0.5">Hace 2 días</p>
+        </div>
+      </div>
+
+      <!-- Notif 5: PR aprobado (read) -->
+      <div class="notif-item p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer opacity-60" data-read="true">
+        <div class="mt-0.5 shrink-0">
+          <div class="w-5 h-5 rounded-full bg-green-900/20 text-green-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px]">check_circle</span>
+          </div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[11px] text-zinc-400 leading-snug">PR #45 aprobado — <span class="font-bold">Refactorizar UI</span></p>
+          <p class="text-[10px] text-zinc-500 mt-0.5">Luisa García · Hace 3 días</p>
+        </div>
+      </div>
+
+      <!-- Empty padding -->
+      <div class="py-4 text-center">
+        <p class="text-[10px] text-zinc-600 uppercase tracking-widest">No hay más notificaciones</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="p-3 border-t border-zinc-800 flex items-center justify-between bg-zinc-900/50 shrink-0">
+      <span class="text-[10px] text-zinc-500">3 sin leer</span>
+      <div class="flex items-center gap-2">
+        <span class="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="text-[10px] text-zinc-400">Connected</span>
+      </div>
+    </footer>
   </div>
+
+  <script>
+    // Mark all as read
+    document.getElementById('markAllBtn')?.addEventListener('click', () => {
+      document.querySelectorAll('.notif-item').forEach(item => {
+        item.dataset.read = 'true';
+        item.classList.add('opacity-60');
+        item.querySelector('.unread-dot')?.remove();
+      });
+      const footer = document.querySelector('footer span.text-zinc-500');
+      if (footer) footer.textContent = '0 sin leer';
+    });
+
+    // Mark individual as read on click
+    document.querySelectorAll('.notif-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (item.dataset.read === 'false') {
+          item.dataset.read = 'true';
+          item.classList.add('opacity-60');
+          item.querySelector('.unread-dot')?.remove();
+          // Update counter
+          const unread = document.querySelectorAll('.notif-item[data-read="false"]').length;
+          const footer = document.querySelector('footer span.text-zinc-500');
+          if (footer) footer.textContent = `${unread} sin leer`;
+        }
+      });
+    });
+  </script>
 </PluginLayout>

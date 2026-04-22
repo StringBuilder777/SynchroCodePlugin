@@ -8,6 +8,7 @@ Plugin de VS Code para sincronizar tareas y colaboración de equipo en tiempo re
 - **Webview UI**: Astro 5 + React 19 + Tailwind CSS v4
 - **Componentes**: shadcn/ui + Radix UI + Lucide React
 - **Build**: Astro build → `dist/`, TypeScript compiler → `out/`
+- **Backend API**: Quarkus en `http://localhost:8080` (JWT de Supabase)
 
 ## Estructura del proyecto
 
@@ -66,13 +67,13 @@ SynchroCodePlugin/
 ### Probar el plugin en VS Code
 
 1. Instala dependencias: `npm install`
-2. Compila: `npm run build`
-3. Abre el proyecto en VS Code
-4. Presiona **F5** — abre un Extension Development Host con el plugin activo
-5. En el nuevo VS Code, busca el icono de SynchroCode en la Activity Bar (barra lateral izquierda)
+2. Crea `.env` desde `.env.example` y configura las mismas credenciales de Supabase usadas en `SynchroCodeWEB`, además de `PUBLIC_API_URL`
+3. Compila: `npm run build`
+4. Abre el proyecto en VS Code
+5. Presiona **F5** — abre un Extension Development Host con el plugin activo
+6. En el nuevo VS Code, busca el icono de SynchroCode en la Activity Bar (barra lateral izquierda)
 
-> El comando F5 ejecuta automáticamente `npm run build:extension` antes de lanzar.
-> Si cambias pantallas (Astro), necesitas ejecutar `npm run build:webview` manualmente y recargar el Extension Development Host.
+> El comando F5 ejecuta automáticamente `npm run build` (webview + extension) antes de lanzar.
 
 ### Preview en browser (solo UI)
 
@@ -86,7 +87,7 @@ Abre `http://localhost:4321` — muestra todas las pantallas con un frame de VS 
 
 | Pantalla | Ruta plugin | Descripción |
 |---|---|---|
-| Login | `/plugin/login` | Inicio de sesión con email/contraseña y GitHub OAuth |
+| Login | `/plugin/login` | Inicio de sesión real con Supabase (email/contraseña y GitHub OAuth) |
 | Tareas | `/plugin/tareas` | Lista de tareas del equipo |
 | Detalle de tarea | `/plugin/tarea-detalle` | Vista completa de una tarea |
 | Colaboración | `/plugin/colaboracion` | Presencia en tiempo real del equipo |
@@ -110,4 +111,5 @@ UI → window.__navigate('tareas')
 - **Sin `"type": "module"`** en `package.json` — el output de TypeScript es CommonJS, requerido por VS Code.
 - **Path rewriting** — `extension.ts` reemplaza `/_astro/` y `src="/"` con las URIs del webview después de leer el HTML del `dist/`.
 - **CSP** — `extension.ts` inyecta el header `Content-Security-Policy` permitiendo assets locales y Google Fonts (para iconos Material Symbols).
+- **Backend bridge** — el webview envía requests HTTP al `extension.ts` vía `postMessage` (`apiRequest`/`apiResponse`) para evitar problemas de CORS en VS Code.
 - **Icono Activity Bar** — `media/icon.svg` usa el path del logo SynchroCode en blanco; VS Code lo usa como máscara y aplica el color del tema automáticamente.

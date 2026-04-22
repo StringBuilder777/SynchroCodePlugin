@@ -1,29 +1,34 @@
 ---
 import PluginLayout from '../../layouts/PluginLayout.astro';
 ---
-<PluginLayout title="SynchroCode — Detalle" theme="dark">
-  <div class="flex flex-col h-full bg-[#09090b]">
+<PluginLayout title="SynchroCode — Detalle de Tarea" theme="dark">
+  <div class="flex flex-col h-full bg-[var(--plugin-bg)]">
+
     <!-- Header -->
-    <div class="px-5 py-4 border-b border-zinc-800 bg-[#09090b] shrink-0">
+    <div class="px-5 py-4 border-b border-zinc-800 bg-[var(--plugin-bg)] shrink-0">
       <div class="flex items-center justify-between mb-3">
-        <button onclick="window.__navigate('tareas')" class="flex items-center text-[#2e75b8] text-xs font-medium hover:underline bg-transparent border-0 cursor-pointer">
+        <button onclick="window.__navigate('tareas')"
+          class="flex items-center text-[#2e75b8] text-xs font-medium hover:underline bg-transparent border-0 cursor-pointer">
           <span class="material-symbols-outlined text-[16px] mr-1">chevron_left</span>Mis Tareas
         </button>
-        <button class="text-zinc-500 hover:text-zinc-300">
+        <button class="text-zinc-500 hover:text-zinc-300 bg-transparent border-0 cursor-pointer p-1">
           <span class="material-symbols-outlined text-[18px]">more_horiz</span>
         </button>
       </div>
-      <h1 class="text-base font-bold text-zinc-100 leading-tight mb-1">Implementar Auth Middleware</h1>
-      <span class="text-xs text-zinc-500">SC-1024</span>
+      <h1 id="taskTitle" class="text-base font-bold text-zinc-100 leading-tight mb-1">Implementar Auth Middleware</h1>
+      <span id="taskCode" class="text-xs text-zinc-500 font-medium">SC-1024</span>
       <div class="flex flex-wrap gap-2 mt-3">
-        <span class="px-2 py-0.5 bg-red-900/30 text-red-400 text-[10px] font-bold rounded border border-red-800/50">! ALTA</span>
-        <span class="px-2 py-0.5 bg-purple-900/30 text-purple-400 text-[10px] font-bold rounded border border-purple-800/50 flex items-center gap-1">
+        <span id="taskPriorityBadge" class="px-2 py-0.5 bg-red-500/10 text-red-400 text-[10px] font-bold rounded border border-red-500/20 flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>ALTA
+        </span>
+        <span id="taskStatusBadge" class="px-2 py-0.5 bg-purple-500/10 text-purple-400 text-[10px] font-bold rounded border border-purple-500/20 flex items-center gap-1">
           <span class="material-symbols-outlined text-[12px]">refresh</span>EN PROCESO
         </span>
-        <span class="px-2 py-0.5 bg-orange-900/30 text-orange-400 text-[10px] font-bold rounded border border-orange-800/50 flex items-center gap-1">
+        <span id="taskDueBadge" class="px-2 py-0.5 bg-orange-500/10 text-orange-400 text-[10px] font-bold rounded border border-orange-500/20 flex items-center gap-1">
           <span class="material-symbols-outlined text-[12px]">schedule</span>VENCIDA
         </span>
       </div>
+      <div id="taskDetailError" class="hidden mt-3 text-xs text-red-300 bg-red-900/20 border border-red-800/50 rounded px-3 py-2"></div>
     </div>
 
     <!-- Info Grid -->
@@ -31,32 +36,32 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
       <div class="p-3 border-r border-zinc-800">
         <p class="text-[10px] uppercase font-bold text-zinc-500 mb-1">PROYECTO</p>
         <div class="flex items-center text-xs font-semibold text-zinc-300">
-          <span class="material-symbols-outlined text-[14px] mr-1 text-zinc-500">folder</span>SynchroCode-Web
+          <span class="material-symbols-outlined text-[13px] mr-1.5 text-zinc-500">folder</span><span id="taskProject">SynchroCode-Web</span>
         </div>
       </div>
       <div class="p-3">
         <p class="text-[10px] uppercase font-bold text-zinc-500 mb-1">RESPONSABLE</p>
         <div class="flex items-center text-xs font-semibold text-zinc-300">
-          <span class="w-4 h-4 bg-[#2e75b8] rounded-full text-[8px] flex items-center justify-center mr-1.5 text-white">AR</span>Alex Rivera
+          <span id="taskAssigneeAvatar" class="w-4 h-4 bg-[#2e75b8] rounded-full text-[8px] flex items-center justify-center mr-1.5 text-white shrink-0">AR</span><span id="taskAssignee">Alex Rivera</span>
         </div>
       </div>
       <div class="p-3 border-r border-t border-zinc-800">
         <p class="text-[10px] uppercase font-bold text-zinc-500 mb-1">INICIO</p>
-        <p class="text-xs font-semibold text-zinc-300">12 Oct, 2023</p>
+        <p id="taskStartDate" class="text-xs font-semibold text-zinc-300">12 Oct, 2023</p>
       </div>
       <div class="p-3 border-t border-zinc-800">
         <p class="text-[10px] uppercase font-bold text-zinc-500 mb-1">LÍMITE</p>
-        <p class="text-xs font-bold text-red-400 flex items-center">
-          <span class="material-symbols-outlined text-[12px] mr-1">warning</span>25 Oct, 2023
+        <p id="taskDueDate" class="text-xs font-bold text-red-400 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[12px]">warning</span><span>25 Oct, 2023</span>
         </p>
       </div>
     </div>
 
     <!-- Repo -->
-    <div class="px-5 py-3 border-b border-zinc-800 bg-zinc-900/40 shrink-0">
+    <div class="px-5 py-2.5 border-b border-zinc-800 shrink-0">
       <p class="text-[10px] uppercase font-bold text-zinc-500 mb-1">REPOSITORIO</p>
       <a href="#" class="text-xs font-semibold text-[#2e75b8] flex items-center hover:underline">
-        <svg class="w-3.5 h-3.5 mr-1.5 fill-current" viewBox="0 0 24 24">
+        <svg class="w-3.5 h-3.5 mr-1.5 fill-current shrink-0" viewBox="0 0 24 24">
           <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
         </svg>
         synchrocode / backend — Ver en GitHub
@@ -65,73 +70,142 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
 
     <!-- Tabs -->
     <div class="flex border-b border-zinc-800 shrink-0" id="detailTabs">
-      <button data-tab="descripcion" class="flex-1 py-3 text-xs font-bold text-[#2e75b8] border-b-2 border-[#2e75b8] tab-btn">Descripción</button>
-      <button data-tab="historial" class="flex-1 py-3 text-xs font-bold text-zinc-500 hover:text-zinc-200 border-b-2 border-transparent tab-btn">Historial</button>
-      <button data-tab="evidencias" class="flex-1 py-3 text-xs font-bold text-zinc-500 hover:text-zinc-200 border-b-2 border-transparent tab-btn flex items-center justify-center">
-        Evidencias <span class="ml-1.5 px-1.5 py-0.5 bg-[#2e75b8] text-white text-[9px] rounded-full">2</span>
+      <button data-tab="descripcion"
+        class="tab-btn flex-1 py-2.5 text-xs font-bold text-[#2e75b8] border-b-2 border-[#2e75b8]">Descripción</button>
+      <button data-tab="historial"
+        class="tab-btn flex-1 py-2.5 text-xs font-bold text-zinc-500 hover:text-zinc-200 border-b-2 border-transparent">Historial</button>
+      <button data-tab="evidencias"
+        class="tab-btn flex-1 py-2.5 text-xs font-bold text-zinc-500 hover:text-zinc-200 border-b-2 border-transparent flex items-center justify-center">
+        Evidencias <span class="ml-1 px-1.5 py-0.5 bg-[#2e75b8] text-white text-[9px] rounded-full leading-none">2</span>
       </button>
-      <button data-tab="commits" class="flex-1 py-3 text-xs font-bold text-zinc-500 hover:text-zinc-200 border-b-2 border-transparent tab-btn">Commits</button>
+      <button data-tab="commits"
+        class="tab-btn flex-1 py-2.5 text-xs font-bold text-zinc-500 hover:text-zinc-200 border-b-2 border-transparent">Commits</button>
     </div>
 
     <!-- Tab Content -->
-    <div class="flex-1 overflow-y-auto custom-scrollbar p-5">
+    <div class="flex-1 overflow-y-auto hide-scrollbar p-5">
+
+      <!-- Descripción -->
       <div id="tab-descripcion">
-        <div class="text-xs text-zinc-300 leading-relaxed">
-          <p class="mb-3">Implementar la validación de tokens JWT en las rutas protegidas del backend:</p>
-          <ul class="space-y-3 pl-4">
-            <li class="flex items-start"><span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>Validación de expiración del token.</li>
-            <li class="flex items-start"><span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>Verificación de firma (RS256).</li>
-            <li class="flex items-start"><span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>Inyección del usuario en el contexto de la petición.</li>
-            <li class="flex items-start"><span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>Responder 401 si el token es inválido o expirado.</li>
-          </ul>
+        <p id="taskDescription" class="text-xs text-zinc-300 leading-relaxed mb-3">
+          Implementar la validación de tokens JWT en las rutas protegidas del backend. Debe manejar los siguientes casos:
+        </p>
+        <ul id="taskDescriptionChecklist" class="space-y-3">
+          <li class="flex items-start text-xs text-zinc-300">
+            <span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+            Validación de expiración del token.
+          </li>
+          <li class="flex items-start text-xs text-zinc-300">
+            <span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+            Verificación de firma (RS256).
+          </li>
+          <li class="flex items-start text-xs text-zinc-300">
+            <span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+            Inyección del usuario en el contexto de la petición (Request context).
+          </li>
+          <li class="flex items-start text-xs text-zinc-300">
+            <span class="w-1.5 h-1.5 rounded-full border border-zinc-600 mt-1.5 mr-3 shrink-0"></span>
+            Responder 401 con mensaje estandarizado si el token es inválido o expirado.
+          </li>
+        </ul>
+      </div>
+
+      <!-- Historial -->
+      <div id="tab-historial" class="hidden space-y-4">
+        <div class="flex gap-3">
+          <div class="flex flex-col items-center">
+            <span class="w-2 h-2 rounded-full bg-purple-500 shrink-0 mt-0.5"></span>
+            <span class="w-px flex-1 bg-zinc-800 mt-1"></span>
+          </div>
+          <div class="pb-4 flex-1">
+            <p class="text-xs font-semibold text-zinc-200">Estado cambiado a <span class="text-purple-400">En Proceso</span></p>
+            <p class="text-[10px] text-zinc-500 mt-0.5">Alex Rivera · 14 Oct, 2023</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <div class="flex flex-col items-center">
+            <span class="w-2 h-2 rounded-full bg-[#2e75b8] shrink-0 mt-0.5"></span>
+            <span class="w-px flex-1 bg-zinc-800 mt-1"></span>
+          </div>
+          <div class="pb-4 flex-1">
+            <p class="text-xs font-semibold text-zinc-200">Asignado a <span class="text-zinc-300">Alex Rivera</span></p>
+            <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · 12 Oct, 2023</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <div class="flex flex-col items-center">
+            <span class="w-2 h-2 rounded-full bg-zinc-600 shrink-0 mt-0.5"></span>
+          </div>
+          <div class="flex-1">
+            <p class="text-xs font-semibold text-zinc-200">Tarea creada</p>
+            <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · 12 Oct, 2023</p>
+          </div>
         </div>
       </div>
-      <div id="tab-historial" class="hidden">
-        <div class="space-y-3 text-xs text-zinc-300">
-          <div class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-[#2e75b8] mt-1.5 shrink-0"></span><div><p class="font-semibold">Estado cambiado a En Proceso</p><p class="text-zinc-500">Alex Rivera · 14 Oct</p></div></div>
-          <div class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-1.5 shrink-0"></span><div><p class="font-semibold">Tarea creada</p><p class="text-zinc-500">Carlos Mendoza · 12 Oct</p></div></div>
-        </div>
-      </div>
+
+      <!-- Evidencias -->
       <div id="tab-evidencias" class="hidden space-y-3">
-        <div class="p-3 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center gap-3">
-          <div class="w-8 h-8 bg-blue-900/20 flex items-center justify-center rounded text-[#2e75b8] shrink-0">
-            <span class="material-symbols-outlined text-[18px]">image</span>
-          </div>
-          <div class="flex-1 min-w-0"><p class="text-xs font-semibold text-zinc-200 truncate">captura-middleware-test.png</p><p class="text-[10px] text-zinc-500">Alex Rivera · 23 Oct</p></div>
-          <button class="text-[#2e75b8] text-xs font-medium">Ver</button>
+        <div id="taskEvidenceList" class="space-y-3">
+          <div class="p-3 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-zinc-500">Sin evidencias registradas.</div>
         </div>
-        <div class="p-3 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center gap-3">
-          <div class="w-8 h-8 bg-green-900/20 flex items-center justify-center rounded text-green-400 shrink-0">
-            <span class="material-symbols-outlined text-[18px]">description</span>
-          </div>
-          <div class="flex-1 min-w-0"><p class="text-xs font-semibold text-zinc-200 truncate">jwt-test-results.pdf</p><p class="text-[10px] text-zinc-500">Alex Rivera · 22 Oct</p></div>
-          <button class="text-[#2e75b8] text-xs font-medium">Ver</button>
-        </div>
+        <!-- Upload area -->
+        <button id="uploadBtn"
+          class="w-full p-3 border border-dashed border-zinc-700 rounded-lg text-xs text-zinc-500 hover:border-[#2e75b8] hover:text-[#2e75b8] transition-colors flex items-center justify-center gap-2 bg-transparent cursor-pointer">
+          <span class="material-symbols-outlined text-[18px]">upload_file</span>Subir evidencia
+        </button>
       </div>
-      <div id="tab-commits" class="hidden">
-        <p class="text-[11px] text-zinc-500">Incluye <code class="bg-zinc-800 px-1 rounded text-zinc-300">[SC-1024]</code> en tus commits para vincularlos.</p>
+
+      <!-- Commits -->
+      <div id="tab-commits" class="hidden space-y-3">
+        <p class="text-[10px] text-zinc-500 mb-3">
+          Incluye <code id="taskCommitTag" class="bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-300 font-mono">[SC-1024]</code> en tus commits para vincularlos automáticamente.
+        </p>
+        <div class="p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
+          <div class="flex items-start gap-2">
+            <svg class="w-3.5 h-3.5 text-zinc-500 mt-0.5 shrink-0 fill-current" viewBox="0 0 24 24">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-semibold text-zinc-200 truncate">[SC-1024] Add JWT validation middleware</p>
+              <p class="text-[10px] text-zinc-500 mt-0.5">a3f9c12 · Alex Rivera · 23 Oct</p>
+            </div>
+          </div>
+        </div>
+        <div class="p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
+          <div class="flex items-start gap-2">
+            <svg class="w-3.5 h-3.5 text-zinc-500 mt-0.5 shrink-0 fill-current" viewBox="0 0 24 24">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-semibold text-zinc-200 truncate">[SC-1024] Setup Supabase JWT config</p>
+              <p class="text-[10px] text-zinc-500 mt-0.5">b1e4d77 · Alex Rivera · 20 Oct</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Actions -->
-    <div class="p-4 border-t border-zinc-800 space-y-2 shrink-0">
+    <!-- Footer Actions -->
+    <div class="p-4 border-t border-zinc-800 space-y-2 shrink-0 bg-[var(--plugin-bg)]">
       <button onclick="window.__navigate('cambiar-estado')"
-        class="w-full py-2.5 bg-[#2e75b8] hover:bg-[#2563a8] text-white rounded-md text-sm font-semibold flex items-center justify-center gap-2 transition-all">
+        class="w-full py-2.5 bg-[#2e75b8] hover:bg-[#2563a8] text-white rounded-md text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-sm">
         <span class="material-symbols-outlined text-[16px]">swap_horiz</span>Cambiar estado
         <span class="material-symbols-outlined text-[14px]">expand_more</span>
       </button>
-      <button class="w-full py-2 border border-zinc-700 hover:bg-zinc-800 text-zinc-400 rounded-md text-sm font-semibold flex items-center justify-center gap-2 transition-all">
+      <button class="w-full py-2 border border-zinc-700 hover:bg-zinc-800 text-zinc-400 rounded-md text-sm font-semibold flex items-center justify-center gap-2 transition-all bg-transparent cursor-pointer">
         <span class="material-symbols-outlined text-[16px]">open_in_new</span>Ver en Dashboard
       </button>
     </div>
   </div>
 
   <script>
+    import { tasksService, type PluginTask } from '../../lib/tasks';
+
     // Tab switching
-    const tabs = document.querySelectorAll('.tab-btn');
-    tabs.forEach(btn => {
+    const tabBtns = document.querySelectorAll<HTMLButtonElement>('.tab-btn');
+    tabBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
-        tabs.forEach(t => {
+        tabBtns.forEach((t) => {
           t.classList.remove('text-[#2e75b8]', 'border-[#2e75b8]');
           t.classList.add('text-zinc-500', 'border-transparent');
           document.getElementById('tab-' + t.dataset.tab)?.classList.add('hidden');
@@ -140,6 +214,174 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
         btn.classList.remove('text-zinc-500', 'border-transparent');
         document.getElementById('tab-' + btn.dataset.tab)?.classList.remove('hidden');
       });
+    });
+
+    const errorBox = document.getElementById('taskDetailError');
+
+    const STATUS_STYLES: Record<PluginTask['status'], { label: string; classes: string }> = {
+      pendiente: { label: 'PENDIENTE', classes: 'bg-blue-500/10 text-blue-400 border border-blue-500/20' },
+      en_proceso: { label: 'EN PROCESO', classes: 'bg-purple-500/10 text-purple-400 border border-purple-500/20' },
+      terminado: { label: 'TERMINADA', classes: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' },
+    };
+
+    const PRIORITY_STYLES: Record<PluginTask['priority'], { label: string; dot: string; classes: string }> = {
+      alta: { label: 'ALTA', dot: 'bg-red-500', classes: 'bg-red-500/10 text-red-400 border border-red-500/20' },
+      media: { label: 'MEDIA', dot: 'bg-yellow-500', classes: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' },
+      baja: { label: 'BAJA', dot: 'bg-green-500', classes: 'bg-green-500/10 text-green-400 border border-green-500/20' },
+    };
+
+    function setError(message: string) {
+      if (!errorBox) return;
+      errorBox.textContent = message;
+      errorBox.classList.remove('hidden');
+    }
+
+    function clearError() {
+      if (!errorBox) return;
+      errorBox.textContent = '';
+      errorBox.classList.add('hidden');
+    }
+
+    function formatDate(value: string) {
+      if (!value) return 'Sin fecha';
+      try {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'Sin fecha';
+        return new Intl.DateTimeFormat('es-MX', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }).format(date);
+      } catch (e) {
+        return 'Sin fecha';
+      }
+    }
+
+    function initials(value: string) {
+      if (!value) return 'SC';
+      const chunks = String(value).trim().split(/\s+/).filter(Boolean).slice(0, 2);
+      if (chunks.length === 0) return 'SC';
+      return chunks.map((chunk) => chunk[0]?.toUpperCase() || '').join('');
+    }
+
+    function escapeHtml(value: string) {
+      if (value === null || value === undefined) return '';
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function applyTask(task: PluginTask) {
+      if (!task) return;
+      
+      (document.getElementById('taskTitle') as HTMLElement | null)?.replaceChildren(task.title || 'Sin título');
+      (document.getElementById('taskCode') as HTMLElement | null)?.replaceChildren(task.id || '');
+      (document.getElementById('taskProject') as HTMLElement | null)?.replaceChildren(task.projectName || 'Sin proyecto');
+      (document.getElementById('taskAssignee') as HTMLElement | null)?.replaceChildren(task.assignee || 'Sin asignar');
+      (document.getElementById('taskStartDate') as HTMLElement | null)?.replaceChildren(formatDate(task.createdAt));
+
+      const dueDateContainer = document.getElementById('taskDueDate');
+      const dueDateText = dueDateContainer?.querySelector('span:last-child') as HTMLElement | null;
+      if (dueDateText) {
+        dueDateText.textContent = formatDate(task.dueDate);
+      }
+      dueDateContainer?.classList.toggle('text-red-400', Boolean(task.dueDate));
+      dueDateContainer?.classList.toggle('text-zinc-400', !task.dueDate);
+
+      const avatar = document.getElementById('taskAssigneeAvatar');
+      if (avatar) avatar.textContent = initials(task.assignee);
+
+      const desc = document.getElementById('taskDescription');
+      if (desc) desc.textContent = (task.description || '').trim() || 'Sin descripción.';
+      document.getElementById('taskDescriptionChecklist')?.classList.add('hidden');
+
+      const commitTag = document.getElementById('taskCommitTag');
+      if (commitTag) commitTag.textContent = `[${task.id ? task.id.substring(0, 8) : 'TASK'}]`;
+
+      const priorityBadge = document.getElementById('taskPriorityBadge');
+      if (priorityBadge) {
+        const priority = PRIORITY_STYLES[task.priority] || PRIORITY_STYLES.baja;
+        priorityBadge.className = `px-2 py-0.5 text-[10px] font-bold rounded flex items-center gap-1 ${priority.classes}`;
+        priorityBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${priority.dot}"></span>${priority.label}`;
+      }
+
+      const statusBadge = document.getElementById('taskStatusBadge');
+      if (statusBadge) {
+        const status = STATUS_STYLES[task.status] || STATUS_STYLES.pendiente;
+        statusBadge.className = `px-2 py-0.5 text-[10px] font-bold rounded flex items-center gap-1 ${status.classes}`;
+        statusBadge.innerHTML = `<span class="material-symbols-outlined text-[12px]">refresh</span>${status.label}`;
+      }
+
+      const dueBadge = document.getElementById('taskDueBadge');
+      if (dueBadge) {
+        const hasDueDate = Boolean(task.dueDate);
+        dueBadge.classList.toggle('hidden', !hasDueDate);
+      }
+
+      const historyContainer = document.getElementById('tab-historial');
+      if (historyContainer) {
+        historyContainer.innerHTML = task.history.map((item) => `
+          <div class="flex gap-3">
+            <div class="flex flex-col items-center">
+              <span class="w-2 h-2 rounded-full bg-[#2e75b8] shrink-0 mt-0.5"></span>
+            </div>
+            <div class="flex-1">
+              <p class="text-xs font-semibold text-zinc-200">${escapeHtml(item.text)}</p>
+              <p class="text-[10px] text-zinc-500 mt-0.5">${escapeHtml(item.sub)} · ${formatDate(item.date)}</p>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const evidenceContainer = document.getElementById('taskEvidenceList');
+      if (evidenceContainer) {
+        if (task.evidence.length === 0) {
+          evidenceContainer.innerHTML = '<div class="p-3 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-zinc-500">Sin evidencias registradas.</div>';
+        } else {
+          evidenceContainer.innerHTML = task.evidence.map((item) => `
+            <div class="p-3 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center gap-3">
+              <div class="w-8 h-8 bg-blue-900/20 flex items-center justify-center rounded text-[#2e75b8] shrink-0">
+                <span class="material-symbols-outlined text-[18px]">description</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-zinc-200 truncate">${escapeHtml(item.name)}</p>
+                <p class="text-[10px] text-zinc-500">${escapeHtml(item.userId)} · ${formatDate(item.createdAt)} · ${escapeHtml(item.size)}</p>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+    }
+
+    async function loadTaskDetail() {
+      clearError();
+      const taskId = localStorage.getItem('synchrocode-current-task-id');
+      if (!taskId) {
+        setError('No se encontró la tarea seleccionada. Regresa a la lista y elige una tarea.');
+        return;
+      }
+
+      try {
+        const task = await tasksService.getById(taskId);
+        applyTask(task);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'No se pudo cargar el detalle de la tarea.';
+        setError(message);
+      }
+    }
+
+    loadTaskDetail();
+
+    // Upload evidence
+    document.getElementById('uploadBtn')?.addEventListener('click', () => {
+      const taskId = localStorage.getItem('synchrocode-current-task-id');
+      const vscode = (window as any).__vscode || null;
+      if (vscode) {
+        vscode.postMessage({ command: 'uploadEvidence', taskId });
+      }
     });
   </script>
 </PluginLayout>

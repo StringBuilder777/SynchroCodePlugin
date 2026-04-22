@@ -2,12 +2,13 @@
 import PluginLayout from '../../layouts/PluginLayout.astro';
 ---
 <PluginLayout title="SynchroCode — Tareas" theme="dark">
-  <div class="flex flex-col h-full bg-[#09090b]">
+  <div class="flex flex-col h-full bg-[var(--plugin-bg)]">
+
     <!-- Header -->
     <header class="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-950 shrink-0">
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 overflow-hidden">
         <div class="w-7 h-7 shrink-0 rounded-full bg-[#2e75b8]/10 border border-[#2e75b8]/20 flex items-center justify-center text-xs font-bold text-[#2e75b8]">AR</div>
-        <span class="text-[13px] font-semibold text-slate-200">Alex Rivera</span>
+        <h2 class="text-[13px] font-semibold truncate text-slate-200">Alex Rivera</h2>
       </div>
       <div class="flex items-center gap-1">
         <button onclick="window.__navigate('notificaciones')" class="relative p-1.5 hover:bg-zinc-800 rounded transition-colors">
@@ -23,103 +24,256 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
       </div>
     </header>
 
-    <!-- Tabs -->
-    <nav class="flex border-b border-zinc-800 px-2 bg-zinc-950 shrink-0">
-      <button class="flex-1 py-2 text-[11px] font-medium border-b-2 border-[#2e75b8] text-[#2e75b8]">Tareas</button>
-      <button onclick="window.__navigate('chat')" class="flex-1 py-2 text-[11px] font-medium border-b-2 border-transparent text-zinc-400 hover:text-slate-200">Chat</button>
-      <button onclick="window.__navigate('colaboracion')" class="flex-1 py-2 text-[11px] font-medium border-b-2 border-transparent text-zinc-400 hover:text-slate-200">Colaborar</button>
-    </nav>
-
     <!-- Search & Filters -->
-    <div class="p-3 space-y-2 bg-zinc-900/50 shrink-0">
+    <div class="p-3 space-y-3 bg-zinc-900/50 shrink-0">
       <div class="relative">
         <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 text-[18px]">search</span>
-        <input type="text" placeholder="Buscar tarea..."
-          class="w-full pl-9 pr-3 py-1.5 text-xs bg-zinc-900 border border-zinc-800 rounded focus:ring-1 focus:ring-[#2e75b8] outline-none text-slate-200 placeholder:text-zinc-500" />
+        <input id="searchInput" type="text" placeholder="Buscar tarea..."
+          class="w-full pl-9 pr-3 py-1.5 text-xs bg-zinc-900 border border-zinc-800 rounded focus:ring-1 focus:ring-[#2e75b8] focus:border-[#2e75b8] outline-none transition-all text-slate-200 placeholder:text-zinc-400" />
       </div>
       <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-        <button class="shrink-0 px-3 py-1 text-[10px] font-medium bg-[#2e75b8] text-white rounded-full">Todos</button>
-        <button class="shrink-0 px-3 py-1 text-[10px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-full hover:bg-zinc-800">Pendiente</button>
-        <button class="shrink-0 px-3 py-1 text-[10px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-full hover:bg-zinc-800">En Proceso</button>
-        <button class="shrink-0 px-3 py-1 text-[10px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-full hover:bg-zinc-800">Terminada</button>
+        <button data-filter="all"
+          class="filter-btn shrink-0 px-3 py-1 text-[10px] font-medium bg-[#2e75b8] text-white rounded-full shadow-sm transition-colors">Todos</button>
+        <button data-filter="pending"
+          class="filter-btn shrink-0 px-3 py-1 text-[10px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-full hover:bg-zinc-800 transition-colors">Pendiente</button>
+        <button data-filter="in-progress"
+          class="filter-btn shrink-0 px-3 py-1 text-[10px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-full hover:bg-zinc-800 transition-colors">En Proceso</button>
+        <button data-filter="done"
+          class="filter-btn shrink-0 px-3 py-1 text-[10px] font-medium bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-full hover:bg-zinc-800 transition-colors">Terminada</button>
       </div>
     </div>
 
     <!-- Task List -->
-    <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-3">
-      <!-- Task 1 -->
-      <div class="p-3 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-[#2e75b8]/50 transition-colors cursor-pointer"
-           onclick="window.__navigate('tarea-detalle')">
-        <div class="flex justify-between items-start mb-2">
-          <h3 class="text-[13px] font-semibold text-slate-100 leading-tight">Implementar Auth Middleware</h3>
-          <span class="flex h-2 w-2 rounded-full bg-red-500 mt-1 shrink-0"></span>
-        </div>
-        <div class="text-[10px] text-zinc-400 mb-2 flex items-center gap-1">
-          <span class="material-symbols-outlined text-[14px]">folder</span>SynchroCode-Web
-        </div>
-        <div class="flex flex-wrap gap-1.5 mb-3">
-          <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-red-950/50 text-red-400 border border-red-900/50 uppercase">High</span>
-          <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-purple-950/50 text-purple-400 border border-purple-900/50 uppercase">In Progress</span>
-        </div>
-        <div class="flex items-center justify-between mt-2">
-          <div class="flex items-center gap-1 text-[10px] text-zinc-400">
-            <span class="material-symbols-outlined text-[14px]">calendar_today</span>24 Oct 2023
-          </div>
-          <span class="text-[11px] font-semibold text-[#2e75b8] flex items-center gap-1">
-            Ver detalle <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
-          </span>
-        </div>
+    <div id="taskList" class="flex-1 overflow-y-auto hide-scrollbar p-3 space-y-3">
+      <div id="backendError" class="hidden text-xs text-red-300 bg-red-900/20 border border-red-800/50 rounded px-3 py-2"></div>
+      <div id="loadingState" class="py-6 text-center">
+        <p class="text-[11px] text-zinc-500">Cargando tareas del backend...</p>
+      </div>
+      <div id="taskCards" class="space-y-3"></div>
+
+      <!-- Fin de lista / Estado vacío -->
+      <div id="endOfList" class="py-4 text-center">
+        <p class="text-[10px] text-zinc-500 uppercase tracking-widest">Fin de la lista</p>
       </div>
 
-      <!-- Task 2 -->
-      <div class="p-3 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-[#2e75b8]/50 transition-colors cursor-pointer"
-           onclick="window.__navigate('tarea-detalle')">
-        <div class="flex justify-between items-start mb-2">
-          <h3 class="text-[13px] font-semibold text-slate-100 leading-tight">Refactorizar componentes UI</h3>
-          <span class="flex h-2 w-2 rounded-full bg-yellow-500 mt-1 shrink-0"></span>
-        </div>
-        <div class="text-[10px] text-zinc-400 mb-2 flex items-center gap-1">
-          <span class="material-symbols-outlined text-[14px]">folder</span>Design-System
-        </div>
-        <div class="flex flex-wrap gap-1.5 mb-3">
-          <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-yellow-950/50 text-yellow-400 border border-yellow-900/50 uppercase">Medium</span>
-          <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-blue-950/50 text-blue-400 border border-blue-900/50 uppercase">Pending</span>
-        </div>
-        <div class="flex items-center justify-between mt-2">
-          <div class="flex items-center gap-1 text-[10px] text-zinc-400">
-            <span class="material-symbols-outlined text-[14px]">calendar_today</span>28 Oct 2023
-          </div>
-          <span class="text-[11px] font-semibold text-[#2e75b8] flex items-center gap-1">
-            Ver detalle <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
-          </span>
-        </div>
-      </div>
-
-      <!-- Task 3 -->
-      <div class="p-3 bg-zinc-900 border border-zinc-800 rounded-lg opacity-70 cursor-pointer">
-        <div class="flex justify-between items-start mb-2">
-          <h3 class="text-[13px] font-semibold text-slate-100 leading-tight line-through opacity-60">Configurar entorno Docker</h3>
-          <span class="flex h-2 w-2 rounded-full bg-green-500 mt-1 shrink-0"></span>
-        </div>
-        <div class="text-[10px] text-zinc-400 mb-2 flex items-center gap-1">
-          <span class="material-symbols-outlined text-[14px]">folder</span>Infrastructure
-        </div>
-        <div class="flex flex-wrap gap-1.5">
-          <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-green-950/50 text-green-400 border border-green-900/50 uppercase">Low</span>
-          <span class="px-2 py-0.5 text-[9px] font-bold rounded bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 uppercase">Finished</span>
-        </div>
+      <!-- Estado vacío (búsqueda sin resultados) -->
+      <div id="emptyState" class="hidden py-8 text-center">
+        <span class="material-symbols-outlined text-[32px] text-zinc-600 block mb-2">search_off</span>
+        <p class="text-[11px] text-zinc-500">No hay tareas que coincidan</p>
       </div>
     </div>
 
     <!-- Footer -->
-    <footer class="p-2 border-t border-zinc-800 flex items-center justify-between bg-zinc-900/50 shrink-0">
-      <div class="flex items-center gap-1 text-[10px] text-zinc-400">
-        <span class="material-symbols-outlined text-[12px]">code</span>v1.2.4-stable
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="text-[10px] text-zinc-400">Connected</span>
-      </div>
+    <footer class="p-2 border-t border-zinc-800 bg-zinc-950 flex items-center justify-around shrink-0">
+      <button onclick="window.__navigate('dashboard')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-zinc-500 hover:text-zinc-300">
+        <span class="material-symbols-outlined text-[20px]">grid_view</span>
+        <span class="text-[9px] font-medium">Dashboard</span>
+      </button>
+      <button onclick="window.__navigate('tareas')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-[#2e75b8]">
+        <span class="material-symbols-outlined text-[20px]">list_alt</span>
+        <span class="text-[9px] font-medium">Tareas</span>
+      </button>
+      <button onclick="window.__navigate('chat')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-zinc-500 hover:text-zinc-300">
+        <span class="material-symbols-outlined text-[20px]">forum</span>
+        <span class="text-[9px] font-medium">Chat</span>
+      </button>
+      <button onclick="window.__navigate('colaboracion')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-zinc-500 hover:text-zinc-300">
+        <span class="material-symbols-outlined text-[20px]">screen_share</span>
+        <span class="text-[9px] font-medium">Colab</span>
+      </button>
     </footer>
   </div>
+
+  <script>
+    import { tasksService, type PluginTask } from '../../lib/tasks';
+
+    const filterBtns = Array.from(document.querySelectorAll<HTMLButtonElement>('.filter-btn'));
+    const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
+    const taskCardsContainer = document.getElementById('taskCards') as HTMLDivElement | null;
+    const endOfList = document.getElementById('endOfList');
+    const emptyState = document.getElementById('emptyState');
+    const loadingState = document.getElementById('loadingState');
+    const backendError = document.getElementById('backendError');
+
+    let activeFilter = 'all';
+    let searchQuery = '';
+    let allTasks: PluginTask[] = [];
+
+    const STATUS_TO_FILTER: Record<PluginTask['status'], string> = {
+      pendiente: 'pending',
+      en_proceso: 'in-progress',
+      terminado: 'done',
+    };
+
+    const STATUS_LABEL: Record<PluginTask['status'], string> = {
+      pendiente: 'Pendiente',
+      en_proceso: 'En Proceso',
+      terminado: 'Terminada',
+    };
+
+    const STATUS_CLASS: Record<PluginTask['status'], string> = {
+      pendiente: 'bg-blue-950/50 text-blue-400 border border-blue-900/50',
+      en_proceso: 'bg-purple-950/50 text-purple-400 border border-purple-900/50',
+      terminado: 'bg-emerald-950/50 text-emerald-400 border border-emerald-900/50',
+    };
+
+    const PRIORITY_LABEL: Record<PluginTask['priority'], string> = {
+      alta: 'Alta',
+      media: 'Media',
+      baja: 'Baja',
+    };
+
+    const PRIORITY_DOT: Record<PluginTask['priority'], string> = {
+      alta: 'bg-red-500',
+      media: 'bg-yellow-500',
+      baja: 'bg-green-500',
+    };
+
+    const PRIORITY_CLASS: Record<PluginTask['priority'], string> = {
+      alta: 'bg-red-950/50 text-red-400 border border-red-900/50',
+      media: 'bg-yellow-950/50 text-yellow-400 border border-yellow-900/50',
+      baja: 'bg-green-950/50 text-green-400 border border-green-900/50',
+    };
+
+    function escapeHtml(value: string) {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatDate(value: string) {
+      if (!value) return 'Sin fecha';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return 'Sin fecha';
+      return new Intl.DateTimeFormat('es-MX', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }).format(date);
+    }
+
+    function setError(message: string) {
+      if (!backendError) return;
+      backendError.textContent = message;
+      backendError.classList.remove('hidden');
+    }
+
+    function clearError() {
+      backendError?.classList.add('hidden');
+      if (backendError) backendError.textContent = '';
+    }
+
+    function renderTasks() {
+      if (!taskCardsContainer) return;
+
+      const filteredTasks = allTasks.filter((task) => {
+        const filterStatus = STATUS_TO_FILTER[task.status];
+        const matchFilter = activeFilter === 'all' || filterStatus === activeFilter;
+        const matchSearch = task.title.toLowerCase().includes(searchQuery);
+        return matchFilter && matchSearch;
+      });
+
+      taskCardsContainer.innerHTML = filteredTasks.map((task) => {
+        const finished = task.status === 'terminado';
+        return `
+          <div class="task-card p-3 bg-zinc-900 border border-zinc-800 rounded-lg shadow-sm hover:border-[#2e75b8]/50 transition-colors cursor-pointer ${finished ? 'opacity-80 hover:opacity-100' : ''}"
+               data-task-id="${escapeHtml(task.id)}"
+               data-status="${STATUS_TO_FILTER[task.status]}"
+               data-title="${escapeHtml(task.title.toLowerCase())}">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="text-[13px] font-semibold text-slate-100 leading-tight ${finished ? 'line-through opacity-50' : ''}">
+                ${escapeHtml(task.title || 'Sin título')}
+              </h3>
+              <span class="flex h-2 w-2 rounded-full ${PRIORITY_DOT[task.priority]} shrink-0 mt-0.5" title="${PRIORITY_LABEL[task.priority]} Prioridad"></span>
+            </div>
+            <div class="text-[10px] text-zinc-400 mb-3 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">folder</span>
+              <span>Proyecto: ${escapeHtml(task.projectName || 'Sin proyecto')}</span>
+            </div>
+            <div class="flex flex-wrap gap-2 mb-3">
+              <span class="px-2 py-0.5 text-[9px] font-bold rounded uppercase tracking-wider ${PRIORITY_CLASS[task.priority]}">${PRIORITY_LABEL[task.priority]}</span>
+              <span class="px-2 py-0.5 text-[9px] font-bold rounded uppercase tracking-wider ${STATUS_CLASS[task.status]}">${STATUS_LABEL[task.status]}</span>
+            </div>
+            <div class="flex items-center justify-between mt-4">
+              <div class="flex items-center gap-1 text-[10px] text-zinc-400">
+                <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                <span>${formatDate(task.dueDate)}</span>
+              </div>
+              <button class="text-[11px] font-semibold text-[#2e75b8] hover:underline flex items-center gap-1 group">
+                Ver detalle <span class="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const isEmpty = filteredTasks.length === 0;
+      endOfList?.classList.toggle('hidden', isEmpty);
+      emptyState?.classList.toggle('hidden', !isEmpty);
+    }
+
+    filterBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeFilter = btn.dataset.filter || 'all';
+
+        filterBtns.forEach((button) => {
+          const isActive = button === btn;
+          button.classList.toggle('bg-[#2e75b8]', isActive);
+          button.classList.toggle('text-white', isActive);
+          button.classList.toggle('shadow-sm', isActive);
+          button.classList.toggle('bg-zinc-900', !isActive);
+          button.classList.toggle('border', !isActive);
+          button.classList.toggle('border-zinc-800', !isActive);
+          button.classList.toggle('text-zinc-400', !isActive);
+        });
+
+        renderTasks();
+      });
+    });
+
+    searchInput?.addEventListener('input', (event) => {
+      const target = event.target as HTMLInputElement | null;
+      searchQuery = target?.value.trim().toLowerCase() || '';
+      renderTasks();
+    });
+
+    taskCardsContainer?.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement | null;
+      const card = target?.closest('.task-card') as HTMLElement | null;
+      if (!card) return;
+
+      const taskId = card.dataset.taskId;
+      if (!taskId) return;
+
+      localStorage.setItem('synchrocode-current-task-id', taskId);
+      const navigate = (window as any).__navigate;
+      if (typeof navigate === 'function') {
+        navigate('tarea-detalle');
+        return;
+      }
+      window.location.href = '/plugin/tarea-detalle';
+    });
+
+    async function loadTasks() {
+      clearError();
+      loadingState?.classList.remove('hidden');
+      endOfList?.classList.add('hidden');
+      emptyState?.classList.add('hidden');
+
+      try {
+        allTasks = await tasksService.getAllForSidebar();
+        renderTasks();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'No se pudieron cargar las tareas del backend.';
+        setError(message);
+      } finally {
+        loadingState?.classList.add('hidden');
+      }
+    }
+
+    loadTasks();
+  </script>
 </PluginLayout>

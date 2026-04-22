@@ -17,6 +17,20 @@ import '../styles/global.css';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
+    <!-- Inicializar VS Code API UNA sola vez + aplicar tema guardado antes del primer render -->
+    <script is:inline>
+      (function () {
+        // VS Code sólo permite acquireVsCodeApi() una vez por página
+        if (typeof acquireVsCodeApi !== 'undefined' && !window.__vscode) {
+          window.__vscode = acquireVsCodeApi();
+        }
+        // Restaurar tema guardado sin flash
+        var saved = localStorage.getItem('synchrocode-theme');
+        if (saved === 'light' || saved === 'dark') {
+          document.documentElement.className = saved;
+        }
+      })();
+    </script>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
@@ -39,6 +53,29 @@ import '../styles/global.css';
       .custom-scrollbar::-webkit-scrollbar { width: 4px; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
+
+      /* Theme toggle button */
+      #synchro-theme-btn {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        z-index: 200;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 1px solid transparent;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0.35;
+        transition: opacity 0.15s;
+        padding: 0;
+      }
+      #synchro-theme-btn:hover { opacity: 1; }
+      html.dark  #synchro-theme-btn { color: #a1a1aa; border-color: #3f3f46; }
+      html.light #synchro-theme-btn { color: #64748b; border-color: #cbd5e1; }
     </style>
   </head>
   <body>
@@ -46,15 +83,18 @@ import '../styles/global.css';
       <slot />
     </div>
 
-    <!-- Puente de navegación VS Code ↔ Webview -->
+    <!-- Theme toggle -->
+    <button id="synchro-theme-btn" title="Cambiar tema (claro/oscuro)">
+      <span class="material-symbols-outlined" style="font-size:14px;line-height:1">dark_mode</span>
+    </button>
+
+    <!-- VS Code bridge + Theme logic -->
     <script>
       (function () {
-        // Obtiene la API de VS Code si estamos dentro del webview
-        const vscode = (typeof acquireVsCodeApi !== 'undefined')
-          ? acquireVsCodeApi()
-          : null;
+        // Usar la instancia ya inicializada en el script inline de <head>
+        const vscode = window.__vscode || null;
 
-        /** Navega a una pantalla: en extensión usa postMessage, en dev usa el router normal */
+        /** Navega a otra pantalla */
         window.__navigate = function (screen) {
           if (vscode) {
             vscode.postMessage({ command: 'navigate', screen });
@@ -63,27 +103,47 @@ import '../styles/global.css';
           }
         };
 
-        /** Intercepta todos los <a href="/..."> internos */
+        /** Intercepta <a href="/..."> internos */
         document.addEventListener('click', function (e) {
           const a = e.target.closest('a[href]');
           if (!a) return;
           const href = a.getAttribute('href');
           if (href && href.startsWith('/') && !href.startsWith('//')) {
             e.preventDefault();
-            // Extraer la pantalla del path: /plugin/tareas → tareas, /tareas → tareas
             const screen = href.replace(/^\/plugin\//, '').replace(/^\//, '');
             if (screen) window.__navigate(screen);
           }
         });
 
-        // Escuchar mensajes desde la extensión
+        // ── Theme ────────────────────────────────────────────────
+        function applyTheme(t) {
+          document.documentElement.classList.toggle('dark',  t === 'dark');
+          document.documentElement.classList.toggle('light', t === 'light');
+          var icon = document.querySelector('#synchro-theme-btn .material-symbols-outlined');
+          if (icon) icon.textContent = t === 'light' ? 'dark_mode' : 'light_mode';
+        }
+
+        // Sync icon with current class (class was set by inline script or injected HTML)
+        applyTheme(document.documentElement.classList.contains('light') ? 'light' : 'dark');
+
+        // VS Code → webview: theme changed (e.g. user changes VS Code color theme)
         window.addEventListener('message', function (event) {
-          const msg = event.data;
+          var msg = event.data;
           if (msg && msg.command === 'themeChanged') {
-            document.documentElement.classList.toggle('dark', msg.theme === 'dark');
-            document.documentElement.classList.toggle('light', msg.theme === 'light');
+            localStorage.setItem('synchrocode-theme', msg.theme);
+            applyTheme(msg.theme);
           }
         });
+
+        // Toggle button click
+        document.getElementById('synchro-theme-btn')
+          ?.addEventListener('click', function () {
+            var isLight = document.documentElement.classList.contains('light');
+            var next = isLight ? 'dark' : 'light';
+            localStorage.setItem('synchrocode-theme', next);
+            applyTheme(next);
+            if (vscode) vscode.postMessage({ command: 'themeToggled', theme: next });
+          });
       })();
     </script>
   </body>

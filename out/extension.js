@@ -41,18 +41,14 @@ const fs = __importStar(require("fs"));
 // Mapeo de pantalla → archivo en dist/plugin/
 const SCREENS = {
     'login': 'plugin/login',
+    'dashboard': 'plugin/dashboard',
     'tareas': 'plugin/tareas',
     'tarea-detalle': 'plugin/tarea-detalle',
     'colaboracion': 'plugin/colaboracion',
     'chat': 'plugin/chat',
     'notificaciones': 'plugin/notificaciones',
     'cambiar-estado': 'plugin/cambiar-estado',
-    // pantallas light
-    'login-light': 'plugin/login-light',
-    'tareas-light': 'plugin/tareas-light',
-    'tarea-detalle-light': 'plugin/tarea-detalle-light',
-    'colaboracion-light': 'plugin/colaboracion-light',
-    'cambiar-estado-light': 'plugin/cambiar-estado-light',
+    'perfil': 'plugin/perfil',
 };
 function activate(context) {
     const provider = new SynchroCodeProvider(context);
@@ -69,7 +65,6 @@ class SynchroCodeProvider {
         this.context = context;
         this._currentScreen = 'login';
     }
-    // Llamado por VS Code cuando el panel se hace visible
     resolveWebviewView(webviewView, _resolveContext, _token) {
         this._view = webviewView;
         webviewView.webview.options = {
@@ -79,6 +74,15 @@ class SynchroCodeProvider {
             ],
         };
         webviewView.webview.html = this._loadScreen(webviewView.webview, this._currentScreen);
+        // Sincronizar tema cuando VS Code cambia su tema de color
+        vscode.window.onDidChangeActiveColorTheme(() => {
+            if (this._view) {
+                this._view.webview.postMessage({
+                    command: 'themeChanged',
+                    theme: this._getVSCodeTheme(),
+                });
+            }
+        }, undefined, this.context.subscriptions);
         // Escuchar mensajes del webview
         webviewView.webview.onDidReceiveMessage((msg) => this._handleMessage(webviewView.webview, msg), undefined, this.context.subscriptions);
     }
@@ -88,6 +92,13 @@ class SynchroCodeProvider {
         if (this._view) {
             this._view.webview.html = this._loadScreen(this._view.webview, screen);
         }
+    }
+    /** Devuelve 'dark' o 'light' según el tema activo de VS Code */
+    _getVSCodeTheme() {
+        const kind = vscode.window.activeColorTheme.kind;
+        return (kind === vscode.ColorThemeKind.Light || kind === vscode.ColorThemeKind.HighContrastLight)
+            ? 'light'
+            : 'dark';
     }
     // ── Carga el HTML de la pantalla reescribiendo rutas de assets ──────────
     _loadScreen(webview, screen) {
@@ -99,7 +110,12 @@ class SynchroCodeProvider {
         let html = fs.readFileSync(htmlFile, 'utf8');
         html = this._rewritePaths(html, webview);
         html = this._injectCSP(html, webview);
+        html = this._injectTheme(html, this._getVSCodeTheme());
         return html;
+    }
+    /** Inyecta el tema de VS Code en el atributo class del tag <html> */
+    _injectTheme(html, theme) {
+        return html.replace(/(<html\b[^>]*\bclass=")[^"]*(")/i, `$1${theme}$2`);
     }
     // Inyecta CSP que permite assets locales + Google Fonts (para Material Symbols)
     _injectCSP(html, webview) {
@@ -115,9 +131,7 @@ class SynchroCodeProvider {
     // Reescribe /_astro/ → URI del webview para que los assets carguen
     _rewritePaths(html, webview) {
         const distUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'dist'));
-        // Assets bundleados por Astro (CSS/JS)
         html = html.replace(/\/_astro\//g, `${distUri}/_astro/`);
-        // Cualquier otro recurso con ruta absoluta
         html = html.replace(/(src|href)="\//g, `$1="${distUri}/`);
         return html;
     }
@@ -133,6 +147,15 @@ class SynchroCodeProvider {
             case 'loginGithub':
                 this._handleGithubLogin(webview);
                 break;
+            case 'openExternal':
+                this._handleOpenExternal(msg.url);
+                break;
+            case 'apiRequest':
+                this._handleApiRequest(webview, msg);
+                break;
+            case 'themeToggled':
+                // El usuario cambió el tema manualmente desde el webview; no se requiere acción adicional.
+                break;
             default:
                 console.log('[SynchroCode] Mensaje no manejado:', msg);
         }
@@ -140,9 +163,8 @@ class SynchroCodeProvider {
     async _handleLogin(webview, email, password) {
         try {
             // TODO: Llamar al backend de Supabase/Quarkus
-            // Por ahora simula login exitoso
             vscode.window.showInformationMessage(`Bienvenido, ${email}`);
-            this.navigateTo('tareas');
+            this.navigateTo('dashboard');
         }
         catch (err) {
             webview.postMessage({ command: 'loginError', message: err.message ?? 'Error al iniciar sesión' });
@@ -151,6 +173,84 @@ class SynchroCodeProvider {
     _handleGithubLogin(_webview) {
         // TODO: OAuth con Supabase via URL externa
         vscode.env.openExternal(vscode.Uri.parse('https://synchrocode.app/auth/github'));
+    }
+    _handleOpenExternal(url) {
+        try {
+            const uri = vscode.Uri.parse(url);
+            if (uri.scheme !== 'http' && uri.scheme !== 'https') {
+                throw new Error('URL inválida');
+            }
+            vscode.env.openExternal(uri);
+        }
+        catch {
+            vscode.window.showErrorMessage('No se pudo abrir la URL externa.');
+        }
+    }
+    async _handleApiRequest(webview, msg) {
+        const requestId = msg?.requestId;
+        const method = String(msg?.method || 'GET').toUpperCase();
+        const url = msg?.url;
+        const headers = msg?.headers && typeof msg.headers === 'object' ? msg.headers : {};
+        let body = msg?.body;
+        // Si el body es un string (JSON stringified desde el bridge), lo enviamos tal cual o lo parseamos si es necesario.
+        // fetch acepta strings para el body.
+        const respond = (payload) => {
+            webview.postMessage({
+                command: 'apiResponse',
+                requestId,
+                ...payload,
+            });
+        };
+        if (!requestId || typeof requestId !== 'string') {
+            return;
+        }
+        if (typeof url !== 'string') {
+            respond({ ok: false, status: 400, error: 'URL inválida para request.' });
+            return;
+        }
+        try {
+            const parsed = vscode.Uri.parse(url);
+            if (parsed.scheme !== 'http' && parsed.scheme !== 'https') {
+                respond({ ok: false, status: 400, error: 'Solo se permiten URLs http/https.' });
+                return;
+            }
+        }
+        catch {
+            respond({ ok: false, status: 400, error: 'No se pudo parsear la URL.' });
+            return;
+        }
+        try {
+            const response = await fetch(url, { method, headers, body });
+            const contentType = response.headers.get('content-type') || '';
+            let payload;
+            if (contentType.includes('application/json')) {
+                payload = await response.json().catch(async () => await response.text());
+            }
+            else {
+                payload = await response.text();
+            }
+            if (!response.ok) {
+                let error = response.statusText || `HTTP ${response.status}`;
+                if (typeof payload === 'string' && payload.trim()) {
+                    error = payload;
+                }
+                else if (payload && typeof payload === 'object') {
+                    const jsonError = payload.error || payload.message;
+                    if (jsonError)
+                        error = String(jsonError);
+                }
+                respond({ ok: false, status: response.status, error, data: payload });
+                return;
+            }
+            respond({ ok: true, status: response.status, data: payload });
+        }
+        catch (error) {
+            respond({
+                ok: false,
+                status: 500,
+                error: error?.message || 'No se pudo completar la petición.',
+            });
+        }
     }
     _errorPage(message) {
         return `<!doctype html><html><body style="background:#09090b;color:#ef4444;font-family:monospace;padding:1rem;">

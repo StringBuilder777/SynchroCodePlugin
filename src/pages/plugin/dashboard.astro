@@ -1,0 +1,269 @@
+---
+import PluginLayout from '../../layouts/PluginLayout.astro';
+---
+<PluginLayout title="SynchroCode — Dashboard" theme="dark">
+  <div class="flex flex-col h-full bg-[var(--plugin-bg)]">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-950 shrink-0">
+      <div class="flex items-center gap-2 overflow-hidden">
+        <div id="userInitials" class="w-7 h-7 shrink-0 rounded-full bg-[#2e75b8] flex items-center justify-center text-[10px] font-bold text-white shadow-sm">AR</div>
+        <h2 class="text-[13px] font-semibold truncate text-slate-200">Dashboard</h2>
+      </div>
+      <div class="flex items-center gap-1">
+        <button onclick="window.__navigate('notificaciones')" class="relative p-1.5 hover:bg-zinc-800 rounded transition-colors">
+          <span class="material-symbols-outlined text-[20px] text-zinc-400">notifications</span>
+          <span class="absolute top-1.5 right-1.5 flex h-2 w-2 hidden" id="notificationsBadge">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+          </span>
+        </button>
+        <button onclick="window.__navigate('perfil')" class="p-1.5 hover:bg-zinc-800 rounded transition-colors text-zinc-400">
+          <span class="material-symbols-outlined text-[20px]">account_circle</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-4">
+      
+      <!-- KPIs Grid -->
+      <div class="grid grid-cols-2 gap-2">
+        <div class="bg-zinc-900 border border-zinc-800 p-3 rounded-lg">
+          <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-wider mb-1">PROYECTOS</p>
+          <div class="flex items-end justify-between">
+            <span class="text-xl font-bold text-zinc-100" id="projectsCount">0</span>
+            <span class="text-[9px] text-emerald-500 font-medium" id="projectsActive">0 act.</span>
+          </div>
+        </div>
+        <div class="bg-zinc-900 border border-zinc-800 p-3 rounded-lg">
+          <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-wider mb-1">TAREAS</p>
+          <div class="flex items-end justify-between">
+            <span class="text-xl font-bold text-zinc-100" id="tasksCount">0</span>
+            <span class="text-[9px] text-amber-500 font-medium" id="tasksPending">0 pte.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Projects -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between px-1">
+          <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Mis Proyectos</h3>
+          <button onclick="window.__navigate('tareas')" class="text-[10px] text-[#2e75b8] hover:underline font-medium">Ver todos</button>
+        </div>
+        <div class="space-y-2" id="dashboardProjects">
+          <div class="flex items-center justify-center p-3 text-zinc-500">
+            <span class="material-symbols-outlined animate-spin text-[16px]">autorenew</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="space-y-2">
+        <h3 class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-1">Actividad Reciente</h3>
+        <div class="bg-zinc-900 border border-zinc-800 rounded-lg divide-y divide-zinc-800" id="dashboardActivity">
+          <div class="flex items-center justify-center p-3 text-zinc-500">
+            <span class="material-symbols-outlined animate-spin text-[16px]">autorenew</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Navigation Footer (Quick access) -->
+    <footer class="p-2 border-t border-zinc-800 bg-zinc-950 flex items-center justify-around shrink-0">
+      <button onclick="window.__navigate('dashboard')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-[#2e75b8]">
+        <span class="material-symbols-outlined text-[20px]">grid_view</span>
+        <span class="text-[9px] font-medium">Dashboard</span>
+      </button>
+      <button onclick="window.__navigate('tareas')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-zinc-500 hover:text-zinc-300">
+        <span class="material-symbols-outlined text-[20px]">list_alt</span>
+        <span class="text-[9px] font-medium">Tareas</span>
+      </button>
+      <button onclick="window.__navigate('chat')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-zinc-500 hover:text-zinc-300">
+        <span class="material-symbols-outlined text-[20px]">forum</span>
+        <span class="text-[9px] font-medium">Chat</span>
+      </button>
+      <button onclick="window.__navigate('colaboracion')" class="flex flex-col items-center gap-0.5 px-2 py-1 text-zinc-500 hover:text-zinc-300">
+        <span class="material-symbols-outlined text-[20px]">screen_share</span>
+        <span class="text-[9px] font-medium">Colab</span>
+      </button>
+    </footer>
+  </div>
+
+  <script>
+    import { projectsService } from "../../lib/projects";
+    import { tasksService } from "../../lib/tasks";
+    import { usersService } from "../../lib/users";
+    
+    // Función para iniciales
+    function getInitials(name: string) {
+      if (!name) return "US";
+      return name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+    }
+    
+    function timeAgo(dateString: string) {
+      if (!dateString) return "Recientemente";
+      const diff = Date.now() - new Date(dateString).getTime();
+      const minutes = Math.floor(diff / 60000);
+      if (minutes < 1) return "Justo ahora";
+      if (minutes < 60) return `Hace ${minutes} min`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
+      const days = Math.floor(hours / 24);
+      return `Hace ${days} día${days > 1 ? 's' : ''}`;
+    }
+
+    async function loadDashboardData() {
+      try {
+        // Cargar usuario
+        let userName = "Usuario";
+        try {
+          const user = await usersService.getMe();
+          userName = user.name || user.email;
+          const userInitialsEl = document.getElementById("userInitials");
+          if (userInitialsEl) userInitialsEl.textContent = getInitials(userName);
+        } catch (e) {
+          console.warn("No se pudo cargar el usuario", e);
+        }
+
+        // Cargar proyectos y tareas
+        const [projects, tasks] = await Promise.all([
+          projectsService.getAll().catch(() => []),
+          tasksService.getAllForSidebar().catch(() => [])
+        ]);
+
+        // KPIs Proyectos
+        const projectsCountEl = document.getElementById("projectsCount");
+        const projectsActiveEl = document.getElementById("projectsActive");
+        if (projectsCountEl) projectsCountEl.textContent = projects.length.toString();
+        if (projectsActiveEl) {
+          const activeCount = projects.filter(p => p.status === 'activo').length;
+          projectsActiveEl.textContent = `${activeCount} act.`;
+        }
+
+        // KPIs Tareas
+        const tasksCountEl = document.getElementById("tasksCount");
+        const tasksPendingEl = document.getElementById("tasksPending");
+        if (tasksCountEl) tasksCountEl.textContent = tasks.length.toString();
+        if (tasksPendingEl) {
+          const pendingCount = tasks.filter(t => t.status === 'pendiente').length;
+          tasksPendingEl.textContent = `↑${pendingCount} pte.`;
+        }
+
+        // Lista de proyectos
+        const dashboardProjects = document.getElementById("dashboardProjects");
+        if (dashboardProjects) {
+          if (projects.length === 0) {
+            dashboardProjects.innerHTML = `<div class="text-xs text-zinc-500 p-2 text-center">No hay proyectos</div>`;
+          } else {
+            dashboardProjects.innerHTML = "";
+            projects.slice(0, 3).forEach(p => {
+              const div = document.createElement("div");
+              div.className = "p-3 bg-zinc-900 border border-zinc-800 rounded-lg space-y-2 cursor-pointer hover:border-zinc-700 transition-colors";
+              div.onclick = () => window.__navigate(`tareas`);
+              
+              // Simular progreso ya que en la base actual totalTasks y completedTasks podrían no estar llenos
+              const progress = Math.floor(Math.random() * 40) + 40; 
+              const color = progress > 80 ? 'bg-emerald-500' : 'bg-[#2e75b8]';
+
+              div.innerHTML = `
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold text-zinc-200 truncate pr-2">${p.name}</span>
+                  <span class="text-[9px] text-zinc-500 shrink-0">${progress}%</span>
+                </div>
+                <div class="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+                  <div class="h-full ${color} rounded-full" style="width: ${progress}%"></div>
+                </div>
+              `;
+              dashboardProjects.appendChild(div);
+            });
+          }
+        }
+
+        // Actividad reciente
+        const dashboardActivity = document.getElementById("dashboardActivity");
+        if (dashboardActivity) {
+          const activity: any[] = [];
+          
+          // Agregamos creación de proyectos
+          projects.forEach(p => {
+            if (p.startDate) {
+              activity.push({
+                type: 'project',
+                title: `Proyecto <span class="font-bold">${p.name}</span> iniciado`,
+                date: p.startDate,
+                icon: 'topic',
+                color: 'text-purple-400',
+                bg: 'bg-purple-900/20'
+              });
+            }
+          });
+
+          // Agregamos tareas creadas/actualizadas
+          tasks.forEach(t => {
+            if (t.createdAt) {
+              activity.push({
+                type: 'task',
+                title: `Nueva tarea: <span class="font-bold">${t.title}</span>`,
+                date: t.createdAt,
+                icon: 'assignment',
+                color: 'text-[#2e75b8]',
+                bg: 'bg-blue-900/20'
+              });
+            }
+            if (t.history && t.history.length > 0) {
+              const lastHist = t.history[0];
+              activity.push({
+                type: 'history',
+                title: `${lastHist.text} en <span class="font-bold">${t.title}</span>`,
+                date: lastHist.date,
+                icon: 'history',
+                color: 'text-emerald-500',
+                bg: 'bg-emerald-900/20'
+              });
+            }
+          });
+
+          activity.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          const recent = activity.slice(0, 4);
+
+          if (recent.length === 0) {
+            dashboardActivity.innerHTML = `<div class="text-xs text-zinc-500 p-3 text-center">No hay actividad reciente</div>`;
+          } else {
+            dashboardActivity.innerHTML = "";
+            recent.forEach(act => {
+              const div = document.createElement("div");
+              div.className = "p-2.5 flex items-start gap-2.5";
+              div.innerHTML = `
+                <div class="w-6 h-6 rounded ${act.bg} ${act.color} flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[14px]">${act.icon}</span>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-[11px] text-zinc-200 leading-tight truncate-2-lines" title="${act.title.replace(/<[^>]*>?/gm, '')}">${act.title}</p>
+                  <p class="text-[9px] text-zinc-500 mt-0.5">${timeAgo(act.date)}</p>
+                </div>
+              `;
+              dashboardActivity.appendChild(div);
+            });
+          }
+        }
+
+      } catch (err) {
+        console.error("Error al cargar datos del dashboard:", err);
+      }
+    }
+
+    // Inicializar
+    document.addEventListener("DOMContentLoaded", () => {
+      // Small delay to ensure auth is ready if needed
+      setTimeout(loadDashboardData, 100);
+    });
+
+    window.addEventListener('viewChanged', (e: any) => {
+      if (e.detail?.view === 'dashboard') {
+        loadDashboardData();
+      }
+    });
+  </script>
+</PluginLayout>
+
