@@ -85,6 +85,58 @@ class SynchroCodeProvider {
         }, undefined, this.context.subscriptions);
         // Escuchar mensajes del webview
         webviewView.webview.onDidReceiveMessage((msg) => this._handleMessage(webviewView.webview, msg), undefined, this.context.subscriptions);
+        // --- NUEVO: Transmitir cambios del editor al webview ---
+        // 1. Enviar contenido inicial cuando se abre el archivo o cambia de foco
+        vscode.window.onDidChangeActiveTextEditor(editor => {
+            if (editor && this._view) {
+                this._sendEditorUpdate(editor.document);
+            }
+        }, undefined, this.context.subscriptions);
+        // 2. Enviar contenido cada vez que el usuario escribe
+        vscode.workspace.onDidChangeTextDocument(event => {
+            if (this._view && vscode.window.activeTextEditor?.document === event.document) {
+                if (this._updateTimeout)
+                    clearTimeout(this._updateTimeout);
+                this._updateTimeout = setTimeout(() => {
+                    this._sendEditorUpdate(event.document);
+                }, 300);
+            }
+        }, undefined, this.context.subscriptions);
+        // Enviar contenido actual de inmediato si hay un editor abierto
+        if (vscode.window.activeTextEditor) {
+            this._sendEditorUpdate(vscode.window.activeTextEditor.document);
+        }
+    }
+    _sendEditorUpdate(document) {
+        if (!this._view)
+            return;
+        this._view.webview.postMessage({
+            command: 'editorUpdate',
+            content: document.getText(),
+            fileName: path.basename(document.fileName),
+            languageId: document.languageId
+        });
+    }
+    async _handleApplyEditorUpdate(fileName, content) {
+        if (!fileName || typeof content !== 'string')
+            return;
+        // Find document by fileName in workspace.textDocuments
+        const doc = vscode.workspace.textDocuments.find(d => path.basename(d.fileName) === fileName);
+        if (!doc)
+            return;
+        try {
+            if (doc.getText() === content) {
+                return; // No changes
+            }
+            const fullRange = new vscode.Range(doc.positionAt(0), doc.positionAt(doc.getText().length));
+            // Use WorkspaceEdit so we don't accidentally destroy the active file if it's different
+            const edit = new vscode.WorkspaceEdit();
+            edit.replace(doc.uri, fullRange, content);
+            await vscode.workspace.applyEdit(edit);
+        }
+        catch (err) {
+            console.error('[SynchroCode] Error aplicando actualización al editor:', err);
+        }
     }
     /** Navega a otra pantalla (llamable desde fuera) */
     navigateTo(screen) {
@@ -125,6 +177,7 @@ class SynchroCodeProvider {
             `script-src ${webview.cspSource} 'unsafe-inline'`,
             `style-src ${webview.cspSource} 'unsafe-inline' https://fonts.googleapis.com`,
             `font-src https://fonts.gstatic.com`,
+            `connect-src ${webview.cspSource} ws: wss: http: https:`,
         ].join('; ');
         return html.replace('<head>', `<head>\n  <meta http-equiv="Content-Security-Policy" content="${csp}">`);
     }
@@ -155,6 +208,12 @@ class SynchroCodeProvider {
                 break;
             case 'themeToggled':
                 // El usuario cambió el tema manualmente desde el webview; no se requiere acción adicional.
+                break;
+            case 'notifyChat':
+                vscode.window.showInformationMessage(msg.text);
+                break;
+            case 'applyEditorUpdate':
+                this._handleApplyEditorUpdate(msg.fileName, msg.content);
                 break;
             default:
                 console.log('[SynchroCode] Mensaje no manejado:', msg);
@@ -219,8 +278,10 @@ class SynchroCodeProvider {
             respond({ ok: false, status: 400, error: 'No se pudo parsear la URL.' });
             return;
         }
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), SynchroCodeProvider.API_FETCH_TIMEOUT_MS);
         try {
-            const response = await fetch(url, { method, headers, body });
+            const response = await fetch(url, { method, headers, body, signal: controller.signal });
             const contentType = response.headers.get('content-type') || '';
             let payload;
             if (contentType.includes('application/json')) {
@@ -245,11 +306,22 @@ class SynchroCodeProvider {
             respond({ ok: true, status: response.status, data: payload });
         }
         catch (error) {
+            if (error?.name === 'AbortError') {
+                respond({
+                    ok: false,
+                    status: 504,
+                    error: `Timeout al conectar con el backend (${method} ${url})`,
+                });
+                return;
+            }
             respond({
                 ok: false,
                 status: 500,
                 error: error?.message || 'No se pudo completar la petición.',
             });
+        }
+        finally {
+            clearTimeout(timeoutId);
         }
     }
     _errorPage(message) {
@@ -259,4 +331,5 @@ class SynchroCodeProvider {
     </body></html>`;
     }
 }
+SynchroCodeProvider.API_FETCH_TIMEOUT_MS = 15000;
 //# sourceMappingURL=extension.js.map
