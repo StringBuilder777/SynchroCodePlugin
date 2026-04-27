@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { usersService } from "@/lib/users";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { getInitials } from "@/components/usuarios/types";
 import type { User } from "@/components/usuarios/types";
 
@@ -107,7 +107,7 @@ export function Sidebar({ currentPath }: SidebarProps) {
         <div className="flex items-center justify-between">
           <button
             onClick={async () => {
-              await supabase.auth.signOut();
+              await getSupabase().auth.signOut();
               window.location.href = "/login";
             }}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"

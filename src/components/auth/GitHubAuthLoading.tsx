@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { GithubIcon } from "./GithubIcon";
 import { ThemeToggle } from "./ThemeToggle";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 const steps = [
   { label: "Conexión con GitHub establecida", key: "connect" },
@@ -17,7 +17,7 @@ export function GitHubAuthLoading() {
   useEffect(() => {
     // Supabase processes the OAuth tokens from the URL automatically on page load.
     // We listen for the SIGNED_IN event and then redirect.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = getSupabase().auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) {
         setCurrentStep(1);
         setTimeout(() => setCurrentStep(2), 800);
@@ -27,7 +27,7 @@ export function GitHubAuthLoading() {
     });
 
     // Also check if session already exists (e.g. page reload after auth)
-    supabase.auth.getSession().then(({ data }) => {
+    getSupabase().auth.getSession().then(({ data }) => {
       if (data.session) {
         setCurrentStep(2);
         setTimeout(() => { window.location.href = "/proyectos"; }, 500);

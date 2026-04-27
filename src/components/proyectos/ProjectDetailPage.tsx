@@ -8,8 +8,10 @@ import { KanbanBoard } from "@/components/tareas/KanbanBoard";
 import { GitHubTab } from "./GitHubTab";
 import { ChatTab } from "./ChatTab";
 import type { Project, TeamMember } from "./types";
+import type { Task } from "@/components/tareas/types";
 import { STATUS_CONFIG, getInitials, getAvatarColor } from "./types";
 import { projectsService } from "@/lib/projects";
+import { tasksService } from "@/lib/tasks";
 import { usersService } from "@/lib/users";
 import { normalizeUserError } from "@/lib/errors";
 
@@ -49,6 +51,7 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Resolve the project ID: from props or from the URL on the client
@@ -65,26 +68,34 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
     
     async function loadData() {
       try {
-        const [p, userData, membersData] = await Promise.all([
+        const [p, userData, membersData, tasksData] = await Promise.all([
           projectsService.getById(resolvedId!),
           usersService.getMe(),
-          projectsService.getMembers(resolvedId!)
+          projectsService.getMembers(resolvedId!),
+          tasksService.getProjectTasks(resolvedId!)
         ]);
         
         setProject(p);
         setUserRole(userData.role);
+        setTasks(tasksData);
         
-        // Fetch all users to get names/emails for the member list
-        const allOrgUsers = await usersService.getAll();
+        // Wrap fetching all users in try-catch to allow non-admins to enter even if they can't list all users
+        let allOrgUsers: any[] = [];
+        try {
+          allOrgUsers = await usersService.getAll();
+        } catch (e) {
+          console.warn("Could not fetch all users list, using basic member data from project endpoint:", e);
+        }
         
+        // membersData now contains name and role from the backend
         setTeamMembers(
           membersData.map((m: any) => {
-            const u = allOrgUsers.find(user => user.id === m.userId);
+            const u = allOrgUsers.find((user: any) => user.id === m.userId);
             return {
               id: m.userId,
-              name: u?.name || "Usuario Desconocido",
+              name: m.name || u?.name || "Miembro del equipo",
               email: u?.email || "",
-              role: u?.role || "Miembro", // In a real app, role might come from project_team table
+              role: m.role || u?.role || "Miembro",
             };
           })
         );
@@ -99,6 +110,9 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
   }, [resolvedId]);
 
   const isManagement = userRole === "Administrador" || userRole === "Gerente";
+
+  // Filter tabs based on role
+  const visibleTabs = TABS.filter(t => t !== "Equipo" || isManagement);
 
   async function handleEditSave(data: Pick<Project, "name" | "description" | "startDate" | "endDate">) {
     if (!project) return;
@@ -230,7 +244,7 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
 
       {/* Tabs */}
       <div className="flex gap-6 border-b">
-        {TABS.map((t) => (
+        {visibleTabs.map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} className={`pb-3 text-sm font-medium transition-colors border-b-2 ${activeTab === t ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
             {t}
           </button>
@@ -238,13 +252,25 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
       </div>
 
       {/* Tab content */}
-      {activeTab === "Resumen" && (
+      {activeTab === "Resumen" && (() => {
+        const completedTasksCount = tasks.filter(t => t.status === 'terminado').length;
+        const pendingTasksCount = tasks.filter(t => t.status === 'pendiente' || t.status === 'en_proceso').length;
+        const totalProjectTasks = tasks.length;
+        const calcPct = totalProjectTasks > 0 ? Math.round((completedTasksCount / totalProjectTasks) * 100) : 0;
+        
+        // Find creator name
+        const creatorName = teamMembers.find(m => m.id === project.createdBy)?.name || project.createdBy;
+        
+        // Recent activity from tasks
+        const recentTasks = [...tasks].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()).slice(0, 4);
+
+        return (
         <div className="space-y-6">
           {/* Stats */}
           <div className="grid grid-cols-4 gap-4">
             {[
-              { label: "TOTAL DE TAREAS", value: project.totalTasks, sub: `(${project.completedTasks} completadas)` },
-              { label: "EN PROCESO", value: project.totalTasks - project.completedTasks, sub: "pendientes" },
+              { label: "TOTAL DE TAREAS", value: totalProjectTasks, sub: `(${completedTasksCount} completadas)` },
+              { label: "EN PROCESO", value: pendingTasksCount, sub: "pendientes" },
               { label: "MIEMBROS", value: teamMembers.length, sub: "" },
               { label: "DÍAS RESTANTES", value: daysLeft, sub: `Vence ${project.endDate}` },
             ].map((s) => (
@@ -264,13 +290,13 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
                 <div className="grid grid-cols-4 gap-4 pt-2 text-sm">
                   <div><p className="text-xs uppercase text-muted-foreground">Inicio</p><p className="font-medium">{project.startDate}</p></div>
                   <div><p className="text-xs uppercase text-muted-foreground">Entrega</p><p className="font-medium">{project.endDate}</p></div>
-                  <div><p className="text-xs uppercase text-muted-foreground">Creado por</p><p className="font-medium">{project.createdBy}</p></div>
+                  <div><p className="text-xs uppercase text-muted-foreground">Creado por</p><p className="font-medium truncate pr-2" title={creatorName}>{creatorName}</p></div>
                   <div><p className="text-xs uppercase text-muted-foreground">Estado</p><p className="font-medium text-primary">{cfg.label}</p></div>
                 </div>
                 <div className="rounded-lg bg-secondary p-4 space-y-2">
-                  <div className="flex justify-between text-sm"><span className="font-medium">Progreso general</span><span className="text-primary font-semibold">{pct}%</span></div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} /></div>
-                  <p className="text-xs text-muted-foreground">{project.completedTasks} de {project.totalTasks} tareas completadas</p>
+                  <div className="flex justify-between text-sm"><span className="font-medium">Progreso general</span><span className="text-primary font-semibold">{calcPct}%</span></div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary" style={{ width: `${calcPct}%` }} /></div>
+                  <p className="text-xs text-muted-foreground">{completedTasksCount} de {totalProjectTasks} tareas completadas</p>
                 </div>
               </div>
 
@@ -278,19 +304,24 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
               <div className="rounded-lg border p-6 space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="font-semibold">Actividad reciente</h3>
-                  <button className="text-sm text-primary hover:underline">Ver todo</button>
+                  <a href="?tab=Tareas" onClick={(e) => { e.preventDefault(); setActiveTab("Tareas"); }} className="text-sm text-primary hover:underline">Ver todo</a>
                 </div>
                 <div className="space-y-0">
                   <div className="grid grid-cols-3 gap-4 text-xs uppercase tracking-wide text-muted-foreground pb-2 border-b">
                     <span>Tarea</span><span>Estado</span><span>Actualización</span>
                   </div>
-                  {ACTIVITY.map((a) => {
-                    const sb = STATUS_BADGE[a.status];
+                  {recentTasks.length === 0 ? (
+                    <div className="py-4 text-center text-sm text-muted-foreground">No hay tareas creadas.</div>
+                  ) : recentTasks.map((t) => {
+                    let sb = STATUS_BADGE[t.status] || STATUS_BADGE.pendiente;
+                    
+                    let dateStr = t.createdAt ? new Date(t.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : "Reciente";
+                    
                     return (
-                      <div key={a.task} className="grid grid-cols-3 gap-4 py-3 border-b last:border-0 items-center text-sm">
-                        <span>{a.task}</span>
-                        <Badge variant="outline" className={`w-fit text-[10px] ${sb.cls}`}>{sb.label}</Badge>
-                        <span className="text-muted-foreground">{a.time}</span>
+                      <div key={t.id} className="grid grid-cols-3 gap-4 py-3 border-b last:border-0 items-center text-sm">
+                        <span className="truncate">{t.title}</span>
+                        <Badge variant="outline" className={`w-fit text-[10px] uppercase ${sb.cls}`}>{t.status.replace("_", " ")}</Badge>
+                        <span className="text-muted-foreground">{dateStr}</span>
                       </div>
                     );
                   })}
@@ -342,7 +373,8 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {activeTab === "Equipo" && (
         <div className="space-y-4">
@@ -381,17 +413,32 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
         </div>
       )}
 
-      {activeTab === "Métricas" && (
+      {activeTab === "Métricas" && (() => {
+        const completedTasksCount = tasks.filter(t => t.status === 'terminado').length;
+        const inProcessTasksCount = tasks.filter(t => t.status === 'en_proceso').length;
+        const pendingTasksCount = tasks.filter(t => t.status === 'pendiente').length;
+        
+        const highPriority = tasks.filter(t => t.priority === 'alta').length;
+        const mediumPriority = tasks.filter(t => t.priority === 'media').length;
+        const lowPriority = tasks.filter(t => t.priority === 'baja').length;
+        
+        const highPct = tasks.length ? Math.round((highPriority / tasks.length) * 100) : 0;
+        const mediumPct = tasks.length ? Math.round((mediumPriority / tasks.length) * 100) : 0;
+        const lowPct = tasks.length ? Math.round((lowPriority / tasks.length) * 100) : 0;
+
+        const completionRate = tasks.length ? Math.round((completedTasksCount / tasks.length) * 100) : 0;
+
+        return (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-primary">Resumen de Métricas</h3>
           </div>
           <div className="grid grid-cols-4 gap-4">
             {[
-              { label: "Tiempo Promedio Tarea", value: "—", change: "", changeColor: "text-muted-foreground", sub: "Sin datos aún" },
-              { label: "Tareas Completadas", value: String(project.completedTasks), change: "", changeColor: "text-muted-foreground", sub: `de ${project.totalTasks} totales` },
-              { label: "Eficiencia Equipo", value: "—", change: "", changeColor: "text-muted-foreground", sub: "Sin datos aún" },
-              { label: "Errores Reportados", value: "—", change: "", changeColor: "text-muted-foreground", sub: "Sin datos aún" },
+              { label: "Total de Tareas", value: String(tasks.length), change: "", changeColor: "text-muted-foreground", sub: "Asignadas al proyecto" },
+              { label: "Tareas Completadas", value: String(completedTasksCount), change: "", changeColor: "text-muted-foreground", sub: `de ${tasks.length} totales` },
+              { label: "Progreso del Proyecto", value: `${completionRate}%`, change: "", changeColor: "text-muted-foreground", sub: "Tasa de completitud" },
+              { label: "Tareas Pendientes", value: String(pendingTasksCount + inProcessTasksCount), change: "", changeColor: "text-muted-foreground", sub: "Por realizar" },
             ].map((m) => (
               <div key={m.label} className="rounded-lg border p-4 space-y-1">
                 <p className="text-xs text-muted-foreground">{m.label}</p>
@@ -406,14 +453,20 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
 
           <div className="grid grid-cols-[1fr_340px] gap-6">
             <div className="rounded-lg border p-6 space-y-4">
-              <div><h4 className="font-semibold">Velocidad del Equipo</h4><p className="text-sm text-muted-foreground">Tareas completadas por semana</p></div>
+              <div><h4 className="font-semibold">Estado de las Tareas</h4><p className="text-sm text-muted-foreground">Distribución actual del proyecto</p></div>
               <div className="flex items-end gap-3 h-48">
-                {[35, 45, 50, 60, 70, 85].map((h, i) => (
-                  <div key={`bar-${i}`} className="flex-1 flex flex-col items-center gap-2">
-                    <div className="w-full rounded-t bg-primary" style={{ height: `${h}%` }} />
-                    <span className="text-[10px] text-muted-foreground">{i < 5 ? `Sem ${i + 1}` : "Actual"}</span>
-                  </div>
-                ))}
+                <div className="flex-1 flex flex-col justify-end items-center gap-2 h-full">
+                  <div className="w-full rounded-t bg-slate-400" style={{ height: `${tasks.length ? Math.max(10, (pendingTasksCount/tasks.length)*100) : 0}%` }} />
+                  <span className="text-[10px] text-muted-foreground">Pendientes ({pendingTasksCount})</span>
+                </div>
+                <div className="flex-1 flex flex-col justify-end items-center gap-2 h-full">
+                  <div className="w-full rounded-t bg-amber-500" style={{ height: `${tasks.length ? Math.max(10, (inProcessTasksCount/tasks.length)*100) : 0}%` }} />
+                  <span className="text-[10px] text-muted-foreground">En Proceso ({inProcessTasksCount})</span>
+                </div>
+                <div className="flex-1 flex flex-col justify-end items-center gap-2 h-full">
+                  <div className="w-full rounded-t bg-emerald-500" style={{ height: `${tasks.length ? Math.max(10, (completedTasksCount/tasks.length)*100) : 0}%` }} />
+                  <span className="text-[10px] text-muted-foreground">Completadas ({completedTasksCount})</span>
+                </div>
               </div>
             </div>
 
@@ -422,17 +475,17 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
               <div className="flex justify-center py-4">
                 <div className="relative size-36">
                   <svg viewBox="0 0 36 36" className="size-full -rotate-90">
-                    <circle cx="18" cy="18" r="14" fill="none" strokeWidth="5" stroke="currentColor" className="text-rose-500" strokeDasharray="22 88" strokeDashoffset="0" />
-                    <circle cx="18" cy="18" r="14" fill="none" strokeWidth="5" stroke="currentColor" className="text-amber-500" strokeDasharray="30.8 88" strokeDashoffset="-22" />
-                    <circle cx="18" cy="18" r="14" fill="none" strokeWidth="5" stroke="currentColor" className="text-primary" strokeDasharray="35.2 88" strokeDashoffset="-52.8" />
+                    <circle cx="18" cy="18" r="14" fill="none" strokeWidth="5" stroke="currentColor" className="text-rose-500" strokeDasharray={`${highPct * 0.88} 88`} strokeDashoffset="0" />
+                    <circle cx="18" cy="18" r="14" fill="none" strokeWidth="5" stroke="currentColor" className="text-amber-500" strokeDasharray={`${mediumPct * 0.88} 88`} strokeDashoffset={`-${highPct * 0.88}`} />
+                    <circle cx="18" cy="18" r="14" fill="none" strokeWidth="5" stroke="currentColor" className="text-primary" strokeDasharray={`${lowPct * 0.88} 88`} strokeDashoffset={`-${(highPct + mediumPct) * 0.88}`} />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-xs text-muted-foreground">TOTAL</span></div>
                 </div>
               </div>
               <div className="space-y-2">
-                {[{ label: "Alta", pct: "25%", color: "bg-rose-500" }, { label: "Media", pct: "35%", color: "bg-amber-500" }, { label: "Baja", pct: "40%", color: "bg-primary" }].map((p) => (
+                {[{ label: "Alta", pct: `${highPct}%`, color: "bg-rose-500", count: highPriority }, { label: "Media", pct: `${mediumPct}%`, color: "bg-amber-500", count: mediumPriority }, { label: "Baja", pct: `${lowPct}%`, color: "bg-primary", count: lowPriority }].map((p) => (
                   <div key={p.label} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2"><span className={`size-2.5 rounded-full ${p.color}`} />{p.label}</div>
+                    <div className="flex items-center gap-2"><span className={`size-2.5 rounded-full ${p.color}`} />{p.label} ({p.count})</div>
                     <span className="text-muted-foreground">{p.pct}</span>
                   </div>
                 ))}
@@ -440,11 +493,12 @@ export function ProjectDetailPage({ projectId, initialTab }: Props) {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {activeTab === "Tareas" && <KanbanBoard projectId={project.id} />}
       {activeTab === "GitHub" && <GitHubTab />}
-      {activeTab === "Chat" && <ChatTab />}
+      {activeTab === "Chat" && <ChatTab projectId={project.id} teamMembers={teamMembers} />}
 
       {/* Dialogs */}
       <ProjectFormDialog open={editOpen} onClose={() => setEditOpen(false)} onSave={handleEditSave} project={project} />

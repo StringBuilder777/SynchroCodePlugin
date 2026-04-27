@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export function PasswordRecoveryConfirmation() {
   const [email, setEmail] = useState("");
@@ -16,7 +16,7 @@ export function PasswordRecoveryConfirmation() {
   async function handleResend() {
     if (!email) return;
     setResending(true);
-    await supabase.auth.resetPasswordForEmail(email, {
+    await getSupabase().auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/recuperar-contrasena/nueva`,
     });
     setResending(false);

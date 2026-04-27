@@ -67,21 +67,6 @@ function fromBackend(t: any): Task {
     }
   }
 
-  // Assignee normalization
-  let assignee = "Sin asignar";
-  if (t.assigneeName || t.userName || t.userNameDisplay) {
-    assignee = t.assigneeName || t.userName || t.userNameDisplay;
-  } else if (t.assignedTo && typeof t.assignedTo === "object") {
-    assignee = t.assignedTo.name || t.assignedTo.fullName || t.assignedTo.email || "Usuario";
-  } else if (t.assigned_to && typeof t.assigned_to === "object") {
-    assignee = t.assigned_to.name || t.assigned_to.full_name || t.assigned_to.email || "Usuario";
-  } else if (t.assignee) {
-    assignee = typeof t.assignee === "string" ? t.assignee : (t.assignee.name || "Usuario");
-  } else if (t.assignedTo || t.assigned_to) {
-    // Si es un UUID, lo dejamos tal cual para que el getById lo resuelva
-    assignee = t.assignedTo || t.assigned_to;
-  }
-
   // Format evidence
   const evidence = (t.evidence || []).map((e: any) => ({
     id: e.id ? String(e.id) : "",
@@ -99,7 +84,8 @@ function fromBackend(t: any): Task {
   }));
 
   if (history.length === 0) {
-    evidence.forEach(e => {
+    // Fallback if no history is provided but we have evidence
+    evidence.forEach((e: any) => {
       history.push({
         text: `Se adjuntó ${e.name}`,
         sub: e.userId,
@@ -121,11 +107,11 @@ function fromBackend(t: any): Task {
     description: t.description || "",
     status,
     priority,
-    assignee,
+    assignee: t.assignedTo || t.assigned_to || t.userId || t.assigneeId || t.user_id || t.assignee_id || t.userName || t.assigneeName || t.assignee || "",
     dueDate: t.dueDate || t.due_date || "",
     evidence,
     createdBy: t.createdBy || "Sistema",
-    createdAt: t.createdAt || t.created_at || "",
+    createdAt: t.createdAt || "",
     history
   };
 }
@@ -147,7 +133,6 @@ export const tasksService = {
 
     const projectId = t.projectId || t.project_id;
     
-    // Resolución asíncrona de nombres si solo tenemos IDs
     if (!projectName && projectId) {
       try {
         const { projectsService } = await import("./projects");
@@ -158,7 +143,6 @@ export const tasksService = {
       }
     }
 
-    // Resolución de nombre de asignado si es un UUID
     if (task.assignee && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(task.assignee)) {
       try {
         const { usersService } = await import("./users");
@@ -179,7 +163,6 @@ export const tasksService = {
     console.log("[tasksService] Obteniendo todas las tareas para el sidebar");
     const data = await api.get<any[]>("/tasks/all");
     
-    // Obtenemos los proyectos para mapear los nombres
     let projectsMap: Record<string, string> = {};
     try {
       const { projectsService } = await import("./projects");
@@ -189,7 +172,6 @@ export const tasksService = {
       console.warn("No se pudieron cargar los proyectos para mapear nombres de tareas", e);
     }
 
-    // Obtenemos usuarios para mapear nombres de asignados
     let usersMap: Record<string, string> = {};
     try {
       const { usersService } = await import("./users");
@@ -203,7 +185,6 @@ export const tasksService = {
       const task = fromBackend(t);
       const pId = t.projectId || t.project_id;
       
-      // Si el assignee es un ID, intentamos resolverlo
       if (task.assignee && usersMap[task.assignee]) {
         task.assignee = usersMap[task.assignee];
       }

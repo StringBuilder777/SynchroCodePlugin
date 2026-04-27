@@ -6,6 +6,7 @@ import { ProjectFormDialog } from "./ProjectFormDialog";
 import type { Project } from "./types";
 import { STATUS_CONFIG, getInitials, getAvatarColor } from "./types";
 import { projectsService } from "@/lib/projects";
+import { tasksService } from "@/lib/tasks";
 import { usersService } from "@/lib/users";
 import { normalizeUserError } from "@/lib/errors";
 
@@ -24,16 +25,44 @@ export function ProjectsPage() {
   const [search, setSearch] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [projectTasks, setProjectTasks] = useState<Record<string, any[]>>({});
+  const [projectMembers, setProjectMembers] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [projectsData, userData] = await Promise.all([
+        const [projectsData, userData, allUsers] = await Promise.all([
           projectsService.getAll(),
-          usersService.getMe()
+          usersService.getMe(),
+          usersService.getAll().catch(() => [])
         ]);
         setProjects(projectsData);
         setUserRole(userData.role);
+
+        const uMap: Record<string, any> = {};
+        allUsers.forEach(u => uMap[u.id] = u);
+
+        const tasksMap: Record<string, any[]> = {};
+        const membersMap: Record<string, any[]> = {};
+
+        await Promise.all(projectsData.map(async (p) => {
+          try {
+            const pTasks = await tasksService.getProjectTasks(p.id);
+            tasksMap[p.id] = pTasks;
+            
+            const pMembers = await projectsService.getMembers(p.id);
+            membersMap[p.id] = pMembers.map(m => {
+              const u = uMap[m.userId] || {};
+              return { id: m.userId, name: m.name || u.name || "Miembro" };
+            });
+          } catch (e) {
+            tasksMap[p.id] = [];
+            membersMap[p.id] = [];
+          }
+        }));
+
+        setProjectTasks(tasksMap);
+        setProjectMembers(membersMap);
       } catch (e: unknown) {
         setError(normalizeUserError(e, { fallback: "No se pudieron cargar los proyectos." }));
       } finally {
@@ -146,7 +175,11 @@ export function ProjectsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((p) => {
           const cfg = STATUS_CONFIG[p.status];
-          const pct = p.totalTasks > 0 ? Math.round((p.completedTasks / p.totalTasks) * 100) : 0;
+          const pTasks = projectTasks[p.id] || [];
+          const completedCount = pTasks.filter(t => t.status === 'terminado').length;
+          const totalCount = pTasks.length;
+          const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+          const pMems = projectMembers[p.id] || [];
           return (
             <a key={p.id} href={`/proyectos/${p.id}`} className="group rounded-xl border p-5 space-y-4 hover:border-primary/50 transition-colors">
               <Badge variant="outline" className={`text-xs ${cfg.color}`}>{cfg.label}</Badge>
@@ -158,26 +191,26 @@ export function ProjectsPage() {
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>Progreso</span>
-                  <span>{p.completedTasks}/{p.totalTasks} tareas</span>
+                  <span>{completedCount}/{totalCount} tareas</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                  <div className={`h-full rounded-full transition-all ${getProgressColor(p.completedTasks, p.totalTasks)}`} style={{ width: `${pct}%` }} />
+                  <div className={`h-full rounded-full transition-all ${getProgressColor(completedCount, totalCount)}`} style={{ width: `${pct}%` }} />
                 </div>
               </div>
               {/* Footer */}
               <div className="flex items-center justify-between">
                 <div className="flex -space-x-2">
-                  {p.members.slice(0, 3).map((m, i) => (
+                  {pMems.slice(0, 3).map((m, i) => (
                     <div key={i} className={`flex size-7 items-center justify-center rounded-full border-2 border-card text-[10px] font-medium ${getAvatarColor(m.name)}`}>
                       {getInitials(m.name)}
                     </div>
                   ))}
-                  {p.members.length > 3 && (
+                  {pMems.length > 3 && (
                     <div className="flex size-7 items-center justify-center rounded-full border-2 border-card bg-secondary text-[10px] font-medium text-muted-foreground">
-                      +{p.members.length - 3}
+                      +{pMems.length - 3}
                     </div>
                   )}
-                  {p.members.length === 0 && (
+                  {pMems.length === 0 && (
                     <div className="flex size-7 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground text-muted-foreground">
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                     </div>

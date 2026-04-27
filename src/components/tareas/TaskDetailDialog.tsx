@@ -67,6 +67,7 @@ export function TaskDetailDialog({ open, onClose, task, onStatusChange, onUpload
   const assigneeName = userMap[task.assignee] || task.assignee || "Sin asignar";
 
   async function handleAssigneeChange(newAssignee: string) {
+    if (!task) return;
     const val = newAssignee === "none" ? "" : newAssignee;
     setAssignee(val);
     try {
@@ -96,6 +97,7 @@ export function TaskDetailDialog({ open, onClose, task, onStatusChange, onUpload
   }
 
   async function handleSave() {
+    if (!task) return;
     setIsEditing(true);
     try {
       await onUpdateTask(task.id, { title, description, dueDate, priority, assignee });

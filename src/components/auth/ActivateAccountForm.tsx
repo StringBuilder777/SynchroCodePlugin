@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { PasswordStrengthBar } from "./PasswordStrengthBar";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { normalizeAuthError } from "@/lib/errors";
 
 export function ActivateAccountForm() {
@@ -21,7 +21,7 @@ export function ActivateAccountForm() {
   useEffect(() => {
     let unsubscribed = false;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = getSupabase().auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" || event === "PASSWORD_RECOVERY") {
         setReady(true);
         if (session?.user) {
@@ -36,7 +36,7 @@ export function ActivateAccountForm() {
       }
     });
 
-    supabase.auth.getSession().then(({ data }) => {
+    getSupabase().auth.getSession().then(({ data }) => {
       if (data.session) {
         setReady(true);
         setUserEmail(data.session.user.email ?? "");
@@ -69,7 +69,7 @@ export function ActivateAccountForm() {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await getSupabase().auth.updateUser({ password });
     if (error) {
       setError(normalizeAuthError(error, "No se pudo activar la cuenta."));
       setLoading(false);

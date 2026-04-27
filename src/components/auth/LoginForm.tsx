@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { GithubIcon } from "./GithubIcon";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -32,7 +32,7 @@ export function LoginForm() {
     setError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await getSupabase().auth.signInWithPassword({ email, password });
 
     if (error) {
       setError("Correo o contraseña incorrectos.");
@@ -43,7 +43,7 @@ export function LoginForm() {
   }
 
   async function handleGitHubLogin() {
-    await supabase.auth.signInWithOAuth({
+    await getSupabase().auth.signInWithOAuth({
       provider: "github",
       options: { redirectTo: `${window.location.origin}/auth/github` },
     });
