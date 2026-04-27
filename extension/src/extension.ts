@@ -233,6 +233,12 @@ class SynchroCodeProvider implements vscode.WebviewViewProvider {
         vscode.window.showInformationMessage(msg.text);
         break;
 
+      case 'requestCurrentEditor':
+        if (vscode.window.activeTextEditor) {
+          this._sendEditorUpdate(vscode.window.activeTextEditor.document);
+        }
+        break;
+
       case 'applyEditorUpdate':
         this._handleApplyEditorUpdate(msg.fileName, msg.content);
         break;

@@ -11,6 +11,32 @@ interface CollaborativeChatProps {
   onBack?: () => void;
 }
 
+
+function FileEditor({ fileName, serverContent, isMyLock, onChange }: { fileName: string, serverContent: string, isMyLock: boolean, onChange: (fileName: string, content: string) => void }) {
+  const [localContent, setLocalContent] = useState(serverContent);
+
+  useEffect(() => {
+    if (!isMyLock) {
+      setLocalContent(serverContent);
+    }
+  }, [serverContent, isMyLock]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setLocalContent(e.target.value);
+    onChange(fileName, e.target.value);
+  };
+
+  return (
+    <textarea
+      className={`w-full min-h-[200px] whitespace-pre break-all border border-zinc-800 p-2 rounded bg-zinc-900/50 font-mono text-[11px] leading-relaxed custom-scrollbar outline-none resize-y ${isMyLock ? 'text-zinc-200 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50' : 'text-zinc-400 opacity-80 cursor-not-allowed'}`}
+      value={isMyLock ? localContent : serverContent}
+      readOnly={!isMyLock}
+      onChange={handleChange}
+      spellCheck={false}
+    />
+  );
+}
+
 export function CollaborativeChat({ sessionId, sessionName, passcode, onBack }: CollaborativeChatProps) {
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [userName, setUserName] = useState<string>('Usuario');
@@ -32,6 +58,12 @@ export function CollaborativeChat({ sessionId, sessionName, passcode, onBack }: 
   );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Use a ref to keep track of the latest sessionState without causing re-renders/listener reattachments
+  const sessionStateRef = useRef(sessionState);
+  useEffect(() => {
+    sessionStateRef.current = sessionState;
+  }, [sessionState]);
 
   // Escuchar actualizaciones del editor local de VS Code
   useEffect(() => {
@@ -39,9 +71,9 @@ export function CollaborativeChat({ sessionId, sessionName, passcode, onBack }: 
       const msg = event.data;
       if (msg.command === 'editorUpdate' && isConnected) {
         // Si nosotros tenemos el candado (lock), enviamos el contenido al servidor
-        if (sessionState.lockOwner === userId) {
+        if (sessionStateRef.current.lockOwner === userId) {
           // Optimization: only send if it's different from the known state
-          const currentContent = sessionState.files?.[msg.fileName];
+          const currentContent = sessionStateRef.current.files?.[msg.fileName];
           if (currentContent !== msg.content) {
             updateContent(msg.fileName, msg.content);
           }
@@ -51,7 +83,7 @@ export function CollaborativeChat({ sessionId, sessionName, passcode, onBack }: 
 
     window.addEventListener('message', handleEditorUpdate);
     return () => window.removeEventListener('message', handleEditorUpdate);
-  }, [isConnected, sessionState.lockOwner, sessionState.files, userId, updateContent]);
+  }, [isConnected, userId, updateContent]);
 
   // Sincronizar el editor local cuando recibimos cambios de otros
   useEffect(() => {
@@ -204,9 +236,12 @@ export function CollaborativeChat({ sessionId, sessionName, passcode, onBack }: 
             Object.entries(sessionState.files).map(([fileName, content]) => (
               <div key={fileName} className="mb-6">
                 <div className="text-zinc-500 font-bold mb-2">📄 {fileName}</div>
-                <pre className="whitespace-pre-wrap break-all select-none border border-zinc-800 p-2 rounded bg-zinc-900/50">
-                  <code>{content}</code>
-                </pre>
+                <FileEditor
+                  fileName={fileName}
+                  serverContent={content}
+                  isMyLock={isMyLock}
+                  onChange={updateContent}
+                />
               </div>
             ))
           ) : (
