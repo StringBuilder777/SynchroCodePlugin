@@ -1,343 +1,280 @@
 import { useState, useRef, useEffect } from "react";
+import { chatService, type ChatMessage, type ChatChannel } from "@/lib/chat";
+import { usersService } from "@/lib/users";
+import type { TeamMember } from "./types";
+import { getInitials, getAvatarColor } from "./types";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-
-interface Message {
-  id: string;
-  author: string;
-  avatar: string;
-  content: string;
-  time: string;
-  attachments?: { name: string; size: string; type: "image" | "file" }[];
+interface Props {
+  projectId: string;
+  teamMembers: TeamMember[];
 }
 
-interface Channel {
-  id: string;
-  name: string;
-  unread?: number;
-  lastMessage?: string;
-}
-
-interface Member {
-  id: string;
-  name: string;
-  role: string;
-  online: boolean;
-  avatar: string;
-}
-
-// ── Mock data ──────────────────────────────────────────────────────────────────
-
-const CHANNELS: Channel[] = [
-  { id: "general", name: "general", unread: 3, lastMessage: "¿Alguien revisó el diseño mobile?" },
-  { id: "diseno-ui", name: "diseño-ui", unread: 1, lastMessage: "Subí los nuevos mockups" },
-  { id: "backend", name: "backend", lastMessage: "La API ya está en staging" },
-  { id: "deploy", name: "deploy", lastMessage: "Deploy a prod exitoso" },
-];
-
-const MEMBERS: Member[] = [
-  { id: "m1", name: "Sarah Connor", role: "Project Manager", online: true, avatar: "SC" },
-  { id: "m2", name: "James Reese", role: "Frontend Dev", online: true, avatar: "JR" },
-  { id: "m3", name: "Elena Lopez", role: "UI/UX Designer", online: true, avatar: "EL" },
-  { id: "m4", name: "Marcus Chen", role: "Backend Dev", online: false, avatar: "MC" },
-];
-
-const AVATAR_COLORS: Record<string, string> = {
-  SC: "bg-violet-500/20 text-violet-500",
-  JR: "bg-blue-500/20 text-blue-500",
-  EL: "bg-amber-500/20 text-amber-500",
-  MC: "bg-emerald-500/20 text-emerald-500",
-};
-
-const MESSAGES_BY_CHANNEL: Record<string, Message[]> = {
-  general: [
-    { id: "1", author: "Sarah Connor", avatar: "SC", content: "Buenos días equipo! Hoy tenemos revisión del sprint a las 3pm.", time: "09:15" },
-    { id: "2", author: "James Reese", avatar: "JR", content: "Confirmado, ya tengo lista la demo del navbar nuevo.", time: "09:22" },
-    {
-      id: "3", author: "Elena Lopez", avatar: "EL",
-      content: "Subí los nuevos mockups al drive. Por favor revísenlos antes de la reunión.",
-      time: "09:45",
-      attachments: [{ name: "mockups_navbar_v3.png", size: "2.4 MB", type: "image" }],
-    },
-    { id: "4", author: "Marcus Chen", avatar: "MC", content: "La API de autenticación ya está lista en staging. Pueden integrar.", time: "10:30" },
-    { id: "5", author: "Sarah Connor", avatar: "SC", content: "¿Alguien revisó el diseño mobile? Necesitamos validarlo hoy.", time: "11:02" },
-  ],
-  "diseno-ui": [
-    { id: "1", author: "Elena Lopez", avatar: "EL", content: "Aquí están los tokens de diseño actualizados para el sistema.", time: "08:50" },
-    {
-      id: "2", author: "Elena Lopez", avatar: "EL",
-      content: "También subí el sistema de componentes completo.",
-      time: "08:55",
-      attachments: [{ name: "design_system_v2.fig", size: "8.1 MB", type: "file" }],
-    },
-    { id: "3", author: "James Reese", avatar: "JR", content: "Perfecto, ya lo estoy implementando en el frontend.", time: "09:10" },
-  ],
-  backend: [
-    { id: "1", author: "Marcus Chen", avatar: "MC", content: "Actualicé la documentación de los endpoints en Swagger.", time: "Yesterday" },
-    { id: "2", author: "James Reese", avatar: "JR", content: "La API ya está en staging y funciona correctamente.", time: "Yesterday" },
-  ],
-  deploy: [
-    { id: "1", author: "Sarah Connor", avatar: "SC", content: "Deploy a prod exitoso! Version 2.4.1 en producción.", time: "Hace 2 días" },
-    { id: "2", author: "Marcus Chen", avatar: "MC", content: "Sin errores reportados en Sentry. Todo verde.", time: "Hace 2 días" },
-  ],
-};
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
-function shouldGroupWithPrev(messages: Message[], index: number) {
+function shouldGroupWithPrev(messages: ChatMessage[], index: number) {
   if (index === 0) return false;
-  return messages[index].author === messages[index - 1].author;
+  const curr = messages[index];
+  const prev = messages[index - 1];
+  if (!curr || !prev) return false;
+  return curr.userId === prev.userId;
 }
 
-// ── Attachment preview ─────────────────────────────────────────────────────────
+function formatTime(isoString: string | number | undefined) {
+  if (!isoString) return "";
+  try {
+    // Si es un número (timestamp de Unix en segundos o ms), lo convertimos
+    const date = typeof isoString === 'number' 
+      ? new Date(isoString * (isoString < 10000000000 ? 1000 : 1)) 
+      : new Date(isoString);
+    return date.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
 
-function Attachment({ a }: { a: { name: string; size: string; type: "image" | "file" } }) {
-  if (a.type === "image") {
+function Attachment({ url }: { url: string }) {
+  if (!url) return null;
+  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  if (isImage) {
     return (
-      <div className="mt-2 flex items-center gap-2 rounded-lg border bg-secondary px-3 py-2 text-xs max-w-xs">
-        <div className="flex size-8 items-center justify-center rounded bg-primary/10 text-primary">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-        </div>
-        <div>
-          <div className="font-medium truncate max-w-[180px]">{a.name}</div>
-          <div className="text-muted-foreground">{a.size}</div>
-        </div>
+      <div className="mt-2 rounded-lg border overflow-hidden max-w-xs bg-secondary">
+        <img src={url} alt="Attachment" className="max-h-60 object-contain w-full" />
       </div>
     );
   }
+  const fileName = url.split("/").pop() || "Archivo";
   return (
     <div className="mt-2 flex items-center gap-2 rounded-lg border bg-secondary px-3 py-2 text-xs max-w-xs">
       <div className="flex size-8 items-center justify-center rounded bg-violet-500/10 text-violet-500">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
       </div>
-      <div>
-        <div className="font-medium truncate max-w-[180px]">{a.name}</div>
-        <div className="text-muted-foreground">{a.size}</div>
-      </div>
+      <div><div className="font-medium truncate max-w-[180px]">{fileName}</div></div>
     </div>
   );
 }
 
-// ── Main ChatTab ───────────────────────────────────────────────────────────────
-
-export function ChatTab() {
-  const [activeChannel, setActiveChannel] = useState("general");
-  const [messagesByChannel, setMessagesByChannel] = useState(MESSAGES_BY_CHANNEL);
+export function ChatTab({ projectId, teamMembers = [] }: Props) {
+  const [channels, setChannels] = useState<ChatChannel[]>([]);
+  const [activeChannel, setActiveChannel] = useState<ChatChannel | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [showMembers, setShowMembers] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
+  
+  const wsRef = useRef<WebSocket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const messages = messagesByChannel[activeChannel] ?? [];
+  useEffect(() => {
+    let isMounted = true;
+    async function init() {
+      try {
+        const [channelsData, userData] = await Promise.all([
+          chatService.listChannels(projectId),
+          usersService.getMe()
+        ]);
+        if (!isMounted) return;
+        setChannels(channelsData || []);
+        setCurrentUserId(userData.id);
+        if (channelsData && channelsData.length > 0) {
+          setActiveChannel(channelsData[0]);
+        }
+      } catch (error) {
+        console.error("Error initializing chat:", error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    init();
+    return () => { isMounted = false; };
+  }, [projectId]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [activeChannel, messages.length]);
+    if (!activeChannel || !currentUserId) {
+      setMessages([]);
+      setIsConnected(false);
+      return;
+    }
+    setMessages([]);
+    setIsConnected(false);
+    let ws: WebSocket | null = null;
+    try {
+      const wsUrl = chatService.getWsUrl(activeChannel.websocketPath, currentUserId, activeChannel.channelId);
+      ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+      ws.onopen = () => setIsConnected(true);
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (!data) return;
+          switch (data.type) {
+            case "HISTORY":
+              const historyMessages = Array.isArray(data.messages) ? data.messages : [];
+              setMessages([...historyMessages].reverse());
+              break;
+            case "MESSAGE_SENT":
+              if (data.message) setMessages(prev => [...prev, data.message]);
+              break;
+            case "MESSAGE_EDITED":
+              if (data.message) setMessages(prev => prev.map(m => m.id === data.message.id ? data.message : m));
+              break;
+            case "ERROR":
+              console.error("Chat WebSocket error:", data.message);
+              break;
+          }
+        } catch (error) {
+          console.error("Error parsing WebSocket message:", error);
+        }
+      };
+      ws.onclose = () => setIsConnected(false);
+      ws.onerror = () => setIsConnected(false);
+    } catch (e) {
+      setIsConnected(false);
+    }
+    return () => { if (ws) ws.close(); wsRef.current = null; };
+  }, [activeChannel?.channelId, currentUserId]);
 
-  function sendMessage() {
-    const text = draft.trim();
-    if (!text) return;
-    const newMsg: Message = {
-      id: Date.now().toString(),
-      author: "Sarah Connor",
-      avatar: "SC",
-      content: text,
-      time: new Date().toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" }),
-    };
-    setMessagesByChannel((prev) => ({
-      ...prev,
-      [activeChannel]: [...(prev[activeChannel] ?? []), newMsg],
-    }));
-    setDraft("");
-    inputRef.current?.focus();
-  }
+  useEffect(() => {
+    if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+  async function handleCreateChannel() {
+    const name = prompt("Nombre del nuevo canal:");
+    if (!name || !name.trim()) return;
+    try {
+      const newChannel = await chatService.createChannel(projectId, name.trim());
+      if (newChannel) {
+        setChannels(prev => [...prev, newChannel]);
+        setActiveChannel(newChannel);
+      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Error al crear el canal");
     }
   }
 
-  function switchChannel(id: string) {
-    setActiveChannel(id);
+  function sendMessage() {
+    const text = draft.trim();
+    if (!text || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+    try {
+      wsRef.current.send(JSON.stringify({ type: "SEND", text: text, imageUrls: [] }));
+      setDraft("");
+      setTimeout(() => inputRef.current?.focus(), 0);
+    } catch (e) {
+      console.error("Failed to send message:", e);
+    }
   }
 
-  const onlineCount = MEMBERS.filter((m) => m.online).length;
+  function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  }
+
+  function getUserInfo(userId: string) {
+    const member = (teamMembers || []).find(m => m.id === userId);
+    if (member) {
+      return { name: member.name, avatar: getInitials(member.name), colorCls: getAvatarColor(member.name), role: member.role };
+    }
+    return { name: "Usuario", avatar: "?", colorCls: "bg-secondary text-foreground", role: "Miembro" };
+  }
+
+  if (loading) return <div className="flex h-64 items-center justify-center text-muted-foreground">Cargando chat...</div>;
 
   return (
-    <div className="flex h-[calc(100vh-220px)] min-h-[480px] rounded-lg border overflow-hidden">
+    <div className="flex h-[calc(100vh-220px)] min-h-[480px] rounded-lg border overflow-hidden bg-background shadow-sm">
       {/* ── Channel list ─────────────────────────────────────────────────────── */}
-      <div className="flex w-56 flex-col border-r bg-secondary/30">
-        {/* Search */}
-        <div className="p-3 border-b">
+      <div className="flex w-64 flex-col border-r bg-secondary/15">
+        <div className="p-4 border-b bg-background/50">
           <div className="relative">
             <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input
-              type="text"
-              placeholder="Buscar..."
-              className="w-full rounded-md border bg-background pl-8 pr-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-ring"
-            />
+            <input type="text" placeholder="Buscar canal..." className="w-full rounded-md border bg-background pl-8 pr-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary/30" />
           </div>
         </div>
-
-        {/* Channels */}
         <div className="flex-1 overflow-y-auto p-2">
-          <p className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Canales del proyecto
-          </p>
-          {CHANNELS.map((ch) => (
-            <button
-              key={ch.id}
-              onClick={() => switchChannel(ch.id)}
-              className={`w-full flex items-center justify-between gap-2 rounded-md px-2 py-2 text-sm transition-colors text-left ${activeChannel === ch.id ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"}`}
-            >
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-muted-foreground">#</span>
+          <div className="flex items-center justify-between px-3 py-2 mb-1">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Canales</p>
+            <button onClick={handleCreateChannel} className="rounded-full p-1 hover:bg-primary/10 text-primary transition-colors" title="Crear canal">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+          {(channels || []).map((ch) => (
+            <button key={ch.channelId} onClick={() => setActiveChannel(ch)} className={`w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all mb-0.5 ${activeChannel?.channelId === ch.channelId ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" : "text-muted-foreground hover:bg-secondary/40 hover:text-foreground"}`}>
+              <div className="flex items-center gap-2 min-w-0">
+                <span className={activeChannel?.channelId === ch.channelId ? "text-primary-foreground/70" : "text-muted-foreground/60"}>#</span>
                 <span className="truncate">{ch.name}</span>
               </div>
-              {ch.unread && ch.id !== activeChannel ? (
-                <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-white">
-                  {ch.unread}
-                </span>
-              ) : null}
             </button>
           ))}
+          {(!channels || channels.length === 0) && <p className="px-3 py-4 text-xs text-muted-foreground text-center italic">No hay canales</p>}
         </div>
       </div>
 
       {/* ── Message area ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col min-w-0">
-        {/* Channel header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b">
+      <div className="flex flex-1 flex-col min-w-0 bg-background">
+        <div className="flex items-center justify-between px-6 py-3 border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground font-medium">#</span>
-            <span className="font-semibold text-sm">{activeChannel}</span>
+            <span className="text-xl text-primary font-light">#</span>
+            <span className="font-bold text-sm tracking-tight">{activeChannel?.name || "Selecciona un canal"}</span>
+            {activeChannel && <span className={`size-2 rounded-full ml-1 ${isConnected ? "bg-emerald-500 shadow-sm shadow-emerald-500/50" : "bg-rose-500 animate-pulse"}`} />}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{onlineCount} online</span>
-            <button
-              onClick={() => setShowMembers((v) => !v)}
-              className={`rounded-md p-1.5 transition-colors ${showMembers ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}
-              title="Miembros"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </button>
-          </div>
+          <button onClick={() => setShowMembers((v) => !v)} className={`rounded-full p-2 transition-colors ${showMembers ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary"}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </button>
         </div>
 
         <div className="flex flex-1 min-h-0">
-          {/* Messages */}
           <div className="flex flex-1 flex-col min-w-0">
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
-              {messages.map((msg, i) => {
+            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 bg-secondary/5">
+              {!activeChannel && <div className="flex h-full items-center justify-center text-muted-foreground text-sm italic">Selecciona un canal para conversar</div>}
+              {activeChannel && messages.map((msg, i) => {
+                const isOwn = msg.userId === currentUserId;
                 const grouped = shouldGroupWithPrev(messages, i);
+                const user = getUserInfo(msg.userId);
+
                 return (
-                  <div key={msg.id} className={`flex gap-3 group ${grouped ? "mt-0.5" : "mt-4"}`}>
-                    {/* Avatar or spacer */}
-                    {grouped ? (
-                      <div className="w-8 shrink-0 flex items-center justify-center">
-                        <span className="hidden group-hover:block text-[10px] text-muted-foreground/50">{msg.time}</span>
-                      </div>
-                    ) : (
-                      <div className={`flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-medium ${AVATAR_COLORS[msg.avatar] ?? "bg-secondary text-foreground"}`}>
-                        {msg.avatar}
+                  <div key={msg.id || `msg-${i}`} className={`flex flex-col ${isOwn ? "items-end" : "items-start"} ${grouped ? "mt-1" : "mt-6"}`}>
+                    {!grouped && (
+                      <div className={`flex items-center gap-2 mb-1 px-1 ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
+                        <span className="text-xs font-bold text-foreground/80">{isOwn ? "Tú" : user.name}</span>
+                        <span className="text-[10px] text-muted-foreground/60">{formatTime(msg.sentAt)}</span>
                       </div>
                     )}
-                    <div className="min-w-0">
+                    <div className={`flex gap-2 max-w-[85%] ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
                       {!grouped && (
-                        <div className="flex items-baseline gap-2 mb-0.5">
-                          <span className="text-sm font-semibold">{msg.author}</span>
-                          <span className="text-[11px] text-muted-foreground">{msg.time}</span>
+                        <div className={`flex size-8 shrink-0 items-center justify-center rounded-full text-[10px] font-bold shadow-sm ${user.colorCls}`}>
+                          {user.avatar}
                         </div>
                       )}
-                      <p className="text-sm leading-relaxed">{msg.content}</p>
-                      {msg.attachments?.map((a, j) => <Attachment key={j} a={a} />)}
+                      {grouped && <div className="w-8 shrink-0" />}
+                      <div className={`flex flex-col ${isOwn ? "items-end" : "items-start"}`}>
+                        <div className={`rounded-2xl px-4 py-2 text-sm shadow-sm ${isOwn ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-background border rounded-tl-none"}`}>
+                          <p className="leading-relaxed whitespace-pre-wrap break-words">{msg.text || ""}</p>
+                        </div>
+                        {msg.imageUrls && msg.imageUrls.map((url, j) => <Attachment key={`att-${msg.id}-${j}`} url={url} />)}
+                      </div>
                     </div>
                   </div>
                 );
               })}
-              <div ref={bottomRef} />
+              <div ref={bottomRef} className="h-px" />
             </div>
-
-            {/* Input */}
-            <div className="px-4 pb-4 pt-2 border-t">
-              <div className="flex items-end gap-2 rounded-lg border bg-secondary/50 px-3 py-2">
-                <textarea
-                  ref={inputRef}
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={handleKey}
-                  placeholder={`Mensaje en #${activeChannel}`}
-                  rows={1}
-                  className="flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground max-h-32"
-                  style={{ fieldSizing: "content" } as React.CSSProperties}
-                />
-                <div className="flex items-center gap-1 shrink-0">
-                  {/* Attach */}
-                  <button className="rounded p-1 text-muted-foreground hover:text-foreground transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                  </button>
-                  {/* Emoji */}
-                  <button className="rounded p-1 text-muted-foreground hover:text-foreground transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>
-                  </button>
-                  {/* Send */}
-                  <button
-                    onClick={sendMessage}
-                    disabled={!draft.trim()}
-                    className="rounded p-1 text-primary hover:bg-primary/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                  </button>
-                </div>
+            <div className="px-6 py-4 border-t bg-background">
+              <div className="flex items-end gap-3 rounded-2xl border bg-secondary/20 px-4 py-2.5 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+                <textarea ref={inputRef} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={handleKey} disabled={!activeChannel || !isConnected} placeholder={!isConnected && activeChannel ? "Conectando..." : (activeChannel ? `Mensaje en #${activeChannel.name}` : "Selecciona un canal")} rows={1} className="flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground py-1 min-h-[24px] max-h-32" />
+                <button onClick={sendMessage} disabled={!draft.trim() || !activeChannel || !isConnected} className="rounded-xl p-2 bg-primary text-primary-foreground hover:opacity-90 transition-all disabled:grayscale disabled:opacity-30 shadow-sm shadow-primary/20">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                </button>
               </div>
-              <p className="mt-1.5 text-[10px] text-muted-foreground">
-                Enter para enviar · Shift+Enter para nueva línea
-              </p>
             </div>
           </div>
-
-          {/* Members sidebar */}
           {showMembers && (
-            <div className="w-44 shrink-0 border-l overflow-y-auto p-3 space-y-3">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1">
-                Miembros · {MEMBERS.length}
-              </p>
-
-              {/* Online */}
-              <div className="space-y-0.5">
-                <p className="text-[10px] text-muted-foreground/70 px-1 mb-1">En línea — {onlineCount}</p>
-                {MEMBERS.filter((m) => m.online).map((m) => (
-                  <div key={m.id} className="flex items-center gap-2 rounded-md px-1 py-1.5 hover:bg-accent transition-colors">
-                    <div className="relative">
-                      <div className={`flex size-7 items-center justify-center rounded-full text-[10px] font-medium ${AVATAR_COLORS[m.avatar] ?? "bg-secondary"}`}>
-                        {m.avatar}
-                      </div>
-                      <span className="absolute bottom-0 right-0 block size-2 rounded-full bg-emerald-500 ring-1 ring-background" />
-                    </div>
+            <div className="w-56 shrink-0 border-l overflow-y-auto p-4 space-y-4 bg-secondary/10">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 px-1">En el equipo · {teamMembers.length}</p>
+              <div className="space-y-1">
+                {teamMembers.map((m) => (
+                  <div key={m.id} className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-background transition-colors">
+                    <div className={`flex size-8 items-center justify-center rounded-full text-[10px] font-bold shadow-sm ${getAvatarColor(m.name)}`}>{getInitials(m.name)}</div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium truncate">{m.name.split(" ")[0]}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">{m.role}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Offline */}
-              <div className="space-y-0.5">
-                <p className="text-[10px] text-muted-foreground/70 px-1 mb-1">Fuera de línea</p>
-                {MEMBERS.filter((m) => !m.online).map((m) => (
-                  <div key={m.id} className="flex items-center gap-2 rounded-md px-1 py-1.5 hover:bg-accent transition-colors opacity-60">
-                    <div className="relative">
-                      <div className={`flex size-7 items-center justify-center rounded-full text-[10px] font-medium ${AVATAR_COLORS[m.avatar] ?? "bg-secondary"}`}>
-                        {m.avatar}
-                      </div>
-                      <span className="absolute bottom-0 right-0 block size-2 rounded-full bg-muted-foreground/30 ring-1 ring-background" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium truncate">{m.name.split(" ")[0]}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">{m.role}</p>
+                      <p className="text-xs font-bold truncate">{m.name === "Usuario" ? "Tú" : m.name.split(" ")[0]}</p>
+                      <p className="text-[9px] text-muted-foreground uppercase font-medium">{m.role}</p>
                     </div>
                   </div>
                 ))}

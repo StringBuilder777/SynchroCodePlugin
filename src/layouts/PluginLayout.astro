@@ -24,6 +24,14 @@ import '../styles/global.css';
         if (typeof acquireVsCodeApi !== 'undefined' && !window.__vscode) {
           window.__vscode = acquireVsCodeApi();
         }
+        // GLOBAL ERROR CATCHER PARA DEBUG
+        window.addEventListener('error', function(e) {
+          document.body.innerHTML += '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:red;color:white;z-index:999999;padding:20px;overflow:auto;font-family:monospace;font-size:12px;"><b>GLOBAL ERROR:</b><br/>' + (e.message || e.error) + '<br/><br/>' + (e.error && e.error.stack ? e.error.stack : '') + '</div>';
+        });
+        window.addEventListener('unhandledrejection', function(e) {
+          document.body.innerHTML += '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:red;color:white;z-index:999999;padding:20px;overflow:auto;font-family:monospace;font-size:12px;"><b>PROMISE REJECTION:</b><br/>' + (e.reason && e.reason.message ? e.reason.message : e.reason) + '<br/><br/>' + (e.reason && e.reason.stack ? e.reason.stack : '') + '</div>';
+        });
+        
         // Restaurar tema guardado sin flash
         var saved = localStorage.getItem('synchrocode-theme');
         if (saved === 'light' || saved === 'dark') {

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { normalizeAuthError } from "@/lib/errors";
 
 export function PasswordRecoveryForm() {
@@ -17,7 +17,7 @@ export function PasswordRecoveryForm() {
     setError("");
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await getSupabase().auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/recuperar-contrasena/nueva`,
       });
       if (error) throw error;

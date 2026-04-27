@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { PasswordStrengthBar } from "./PasswordStrengthBar";
 import { ThemeToggle } from "./ThemeToggle";
 import { ArrowLeft } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { api } from "@/lib/api";
 import { normalizeAuthError, normalizeUserError } from "@/lib/errors";
 
@@ -43,7 +43,7 @@ export function SetupForm() {
 
     try {
       // 1. Sign up
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError } = await getSupabase().auth.signUp({
         email,
         password,
         options: {
@@ -58,7 +58,7 @@ export function SetupForm() {
       }
 
       // 2. Login to get JWT
-      const { error: loginError } = await supabase.auth.signInWithPassword({
+      const { error: loginError } = await getSupabase().auth.signInWithPassword({
         email,
         password,
       });
@@ -73,7 +73,7 @@ export function SetupForm() {
       const org = await api.post<{ id: string }>("/organizations", { name: orgName.trim() });
 
       // 4. Save organizationId in user_metadata
-      const { error: updateError } = await supabase.auth.updateUser({
+      const { error: updateError } = await getSupabase().auth.updateUser({
         data: { organizationId: org.id },
       });
 
@@ -84,7 +84,7 @@ export function SetupForm() {
       }
 
       // 5. Refresh session to get JWT with organizationId
-      const { error: refreshError } = await supabase.auth.refreshSession();
+      const { error: refreshError } = await getSupabase().auth.refreshSession();
 
       if (refreshError) {
         setError(normalizeAuthError(refreshError, "No se pudo actualizar la sesión."));

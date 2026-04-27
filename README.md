@@ -1,5 +1,6 @@
 # SynchroCode — VS Code Extension
 
+
 Plugin de VS Code para sincronizar tareas y colaboración de equipo en tiempo real.
 
 ## Stack
@@ -11,6 +12,7 @@ Plugin de VS Code para sincronizar tareas y colaboración de equipo en tiempo re
 - **Backend API**: Quarkus en `http://localhost:8080` (JWT de Supabase)
 
 ## Estructura del proyecto
+
 
 ```
 SynchroCodePlugin/

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { normalizeAuthError } from "@/lib/errors";
 
 export function NewPasswordForm() {
@@ -16,7 +16,7 @@ export function NewPasswordForm() {
   useEffect(() => {
     let unsubscribed = false;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = getSupabase().auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
         setReady(true);
         if (!unsubscribed) {
@@ -26,7 +26,7 @@ export function NewPasswordForm() {
       }
     });
 
-    supabase.auth.getSession().then(({ data }) => {
+    getSupabase().auth.getSession().then(({ data }) => {
       if (data.session) setReady(true);
     });
 
@@ -50,7 +50,7 @@ export function NewPasswordForm() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await getSupabase().auth.updateUser({ password });
     if (error) {
       setError(normalizeAuthError(error, "No se pudo actualizar la contraseña."));
       setLoading(false);

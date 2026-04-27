@@ -9,7 +9,7 @@ import type { Task, TaskStatus, TaskPriority } from "./types";
 import { PRIORITY_CONFIG, COLUMNS } from "./types";
 
 const initialTasks: Task[] = [
-  { id: "t1", title: "Revisar el rendimiento de las consultas pesadas en el dashboard principal.", description: "Implementar los nuevos widgets de visualización en tiempo real para el panel de control principal. Es necesario asegurar que los gráficos de rendimiento sean responsivos y utilicen la nueva paleta de colores de la marca.", status: "pendiente", priority: "alta", assignee: "Alex Rivera", dueDate: "2023-10-12", evidence: [{ name: "dashboard_mockup.png", size: "2.4 MB" }, { name: "requirements_v2.pdf", size: "1.1 MB" }], createdBy: "Admin User", createdAt: "01 Oct" },
+  { id: "t1", title: "Revisar el rendimiento de las consultas pesadas en el dashboard principal.", description: "Implementar los nuevos widgets de visualización en tiempo real para el panel de control principal. Es necesario asegurar que los gráficos de rendimiento sean responsivos y utilicen la nueva paleta de colores de la marca.", status: "pendiente", priority: "alta", assignee: "Alex Rivera", dueDate: "2023-10-12", evidence: [{ id: "e1", name: "dashboard_mockup.png", size: "2.4 MB" }, { id: "e2", name: "requirements_v2.pdf", size: "1.1 MB" }], createdBy: "Admin User", createdAt: "01 Oct" },
   { id: "t2", title: "Completar los endpoints de autenticación en Swagger.", description: "Documentar todos los endpoints de auth en Swagger con ejemplos de request/response.", status: "pendiente", priority: "media", assignee: "Alex Rivera", dueDate: "2023-10-15", evidence: [], createdBy: "Admin User", createdAt: "03 Oct" },
   { id: "t3", title: "Implementar nuevos widgets de visualización de datos en tiempo real.", description: "Crear widgets de datos en tiempo real usando Supabase Realtime.", status: "en_proceso", priority: "alta", assignee: "Sarah Connor", dueDate: "2023-10-08", evidence: [], createdBy: "Admin User", createdAt: "28 Sep" },
   { id: "t4", title: "Automatización de despliegues en el entorno de testing.", description: "Configurar CI/CD pipeline para deploy automático en staging.", status: "terminado", priority: "baja", assignee: "Marcus Chen", dueDate: "2023-10-05", evidence: [], createdBy: "Admin User", createdAt: "20 Sep" },
@@ -146,7 +146,7 @@ export function KanbanPage() {
 
       {/* Dialogs */}
       <TaskFormDialog open={formOpen} onClose={() => setFormOpen(false)} onSave={handleSave} />
-      <TaskDetailDialog open={!!detailTask} onClose={() => setDetailTask(null)} task={detailTask} onStatusChange={handleStatusChange} onUploadEvidence={(id) => { setUploadTaskId(id); }} />
+      <TaskDetailDialog open={!!detailTask} onClose={() => setDetailTask(null)} task={detailTask} onStatusChange={handleStatusChange} onUploadEvidence={(id) => { setUploadTaskId(id); }} onUpdateTask={async () => {}} onDeleteTask={async () => {}} />
       <DeleteTaskDialog open={!!deleteTask} onClose={() => setDeleteTask(null)} onConfirm={handleDelete} task={deleteTask} />
       <UploadEvidenceDialog
         open={!!uploadTaskId}
@@ -154,6 +154,7 @@ export function KanbanPage() {
         onUpload={(files) => {
           if (uploadTaskId) {
             const mappedFiles = files.map((f) => ({
+              id: Date.now().toString() + Math.random().toString(36).substring(7),
               name: f.name,
               size: f.size > 1048576 ? `${(f.size / 1048576).toFixed(1)} MB` : `${(f.size / 1024).toFixed(0)} KB`,
             }));
