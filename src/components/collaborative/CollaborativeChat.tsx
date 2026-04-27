@@ -11,6 +11,32 @@ interface CollaborativeChatProps {
   onBack?: () => void;
 }
 
+
+function FileEditor({ fileName, serverContent, isMyLock, onChange }: { fileName: string, serverContent: string, isMyLock: boolean, onChange: (fileName: string, content: string) => void }) {
+  const [localContent, setLocalContent] = useState(serverContent);
+
+  useEffect(() => {
+    if (!isMyLock) {
+      setLocalContent(serverContent);
+    }
+  }, [serverContent, isMyLock]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setLocalContent(e.target.value);
+    onChange(fileName, e.target.value);
+  };
+
+  return (
+    <textarea
+      className={`w-full min-h-[200px] whitespace-pre break-all border border-zinc-800 p-2 rounded bg-zinc-900/50 font-mono text-[11px] leading-relaxed custom-scrollbar outline-none resize-y ${isMyLock ? 'text-zinc-200 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50' : 'text-zinc-400 opacity-80 cursor-not-allowed'}`}
+      value={isMyLock ? localContent : serverContent}
+      readOnly={!isMyLock}
+      onChange={handleChange}
+      spellCheck={false}
+    />
+  );
+}
+
 export function CollaborativeChat({ sessionId, sessionName, passcode, onBack }: CollaborativeChatProps) {
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [userName, setUserName] = useState<string>('Usuario');
@@ -210,12 +236,11 @@ export function CollaborativeChat({ sessionId, sessionName, passcode, onBack }: 
             Object.entries(sessionState.files).map(([fileName, content]) => (
               <div key={fileName} className="mb-6">
                 <div className="text-zinc-500 font-bold mb-2">📄 {fileName}</div>
-                <textarea 
-                  className={`w-full min-h-[200px] whitespace-pre break-all border border-zinc-800 p-2 rounded bg-zinc-900/50 font-mono text-[11px] leading-relaxed custom-scrollbar outline-none resize-y ${isMyLock ? 'text-zinc-200 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50' : 'text-zinc-400 opacity-80 cursor-not-allowed'}`}
-                  value={content}
-                  readOnly={!isMyLock}
-                  onChange={(e) => updateContent(fileName, e.target.value)}
-                  spellCheck={false}
+                <FileEditor
+                  fileName={fileName}
+                  serverContent={content}
+                  isMyLock={isMyLock}
+                  onChange={updateContent}
                 />
               </div>
             ))
