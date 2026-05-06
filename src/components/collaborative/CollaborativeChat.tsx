@@ -85,9 +85,9 @@ export function CollaborativeChat({ sessionId, sessionName, passcode, onBack }: 
     return () => window.removeEventListener('message', handleEditorUpdate);
   }, [isConnected, userId, updateContent]);
 
-  // Sincronizar el editor local cuando recibimos cambios de otros
+  // Sincronizar el editor local cuando recibimos cambios (incluso si tenemos el lock)
   useEffect(() => {
-    if (isConnected && sessionState.lockOwner && sessionState.lockOwner !== userId && sessionState.files) {
+    if (isConnected && sessionState.files) {
       if (typeof window !== 'undefined' && (window as any).__vscode) {
         Object.entries(sessionState.files).forEach(([fileName, content]) => {
           (window as any).__vscode.postMessage({
@@ -98,14 +98,14 @@ export function CollaborativeChat({ sessionId, sessionName, passcode, onBack }: 
         });
       }
     }
-  }, [isConnected, sessionState.files, sessionState.lockOwner, userId]);
+  }, [isConnected, sessionState.files]);
 
   useEffect(() => {
     // 1. Get current user
     usersService.getMe().then(user => {
       setUserId(user.id);
       setUserName(user.name);
-      
+
       // La petición de unirse (REST) ya la hizo el componente padre (CollabApp)
       // para validar el passcode antes de entrar aquí.
       setMessages([]);
@@ -115,6 +115,18 @@ export function CollaborativeChat({ sessionId, sessionName, passcode, onBack }: 
       setIsInitializing(false);
     });
   }, [sessionId, setMessages]);
+
+  useEffect(() => {
+    // Liberar el lock cuando el usuario cierra la pestaña/sesión (fallback)
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (sessionState.lockOwner === userId) {
+        releaseLock();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [sessionState.lockOwner, userId, releaseLock]);
 
   useEffect(() => {
     // Auto-scroll to bottom on new messages
