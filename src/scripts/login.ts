@@ -21,6 +21,10 @@ function byId<T extends HTMLElement>(id: string): T {
   return element as T;
 }
 
+function byIdOptional<T extends HTMLElement>(id: string): T | null {
+  return document.getElementById(id) as T | null;
+}
+
 function normalizeAuthError(error: unknown): string {
   const raw = error instanceof Error ? error.message : "Error al iniciar sesión";
 
@@ -62,10 +66,10 @@ export function initLogin(options: InitLoginOptions) {
   const eyeIcon = byId<HTMLElement>(options.eyeIconId);
   const errorBox = byId<HTMLElement>(options.errorId);
   const submitButton = byId<HTMLButtonElement>(options.submitButtonId);
-  const githubButton = byId<HTMLButtonElement>(options.githubButtonId);
+  const githubButton = byIdOptional<HTMLButtonElement>(options.githubButtonId);
 
   const defaultSubmitText = submitButton.textContent?.trim() || "Ingresar";
-  const defaultGithubHtml = githubButton.innerHTML;
+  const defaultGithubHtml = githubButton?.innerHTML || "";
 
   emailInput.addEventListener("invalid", () => setSpanishValidationMessage(emailInput, "email"));
   passwordInput.addEventListener("invalid", () => setSpanishValidationMessage(passwordInput, "password"));
@@ -84,12 +88,14 @@ export function initLogin(options: InitLoginOptions) {
 
   const setLoading = (loading: boolean, source: "login" | "github") => {
     submitButton.disabled = loading;
-    githubButton.disabled = loading;
+    if (githubButton) {
+      githubButton.disabled = loading;
+      githubButton.classList.toggle("opacity-70", loading);
+      githubButton.classList.toggle("cursor-not-allowed", loading);
+      githubButton.innerHTML = defaultGithubHtml;
+    }
     submitButton.classList.toggle("opacity-70", loading);
     submitButton.classList.toggle("cursor-not-allowed", loading);
-    githubButton.classList.toggle("opacity-70", loading);
-    githubButton.classList.toggle("cursor-not-allowed", loading);
-    githubButton.innerHTML = defaultGithubHtml;
 
     submitButton.textContent = source === "login" && loading ? "Ingresando..." : defaultSubmitText;
   };
@@ -128,32 +134,34 @@ export function initLogin(options: InitLoginOptions) {
     }
   });
 
-  githubButton.addEventListener("click", async () => {
-    clearError();
-    setLoading(true, "github");
+  if (githubButton) {
+    githubButton.addEventListener("click", async () => {
+      clearError();
+      setLoading(true, "github");
 
-    try {
-      const { data, error } = await getSupabase().auth.signInWithOAuth({
-        provider: "github",
-        options: {
-          skipBrowserRedirect: true,
-          redirectTo: getGithubRedirectUrl(),
-        },
-      });
+      try {
+        const { data, error } = await getSupabase().auth.signInWithOAuth({
+          provider: "github",
+          options: {
+            skipBrowserRedirect: true,
+            redirectTo: getGithubRedirectUrl(),
+          },
+        });
 
-      if (error) {
-        throw error;
+        if (error) {
+          throw error;
+        }
+
+        if (!data?.url) {
+          throw new Error("No se pudo iniciar el flujo de GitHub.");
+        }
+
+        options.openExternal(data.url);
+      } catch (error) {
+        setError(normalizeAuthError(error));
+      } finally {
+        setLoading(false, "github");
       }
-
-      if (!data?.url) {
-        throw new Error("No se pudo iniciar el flujo de GitHub.");
-      }
-
-      options.openExternal(data.url);
-    } catch (error) {
-      setError(normalizeAuthError(error));
-    } finally {
-      setLoading(false, "github");
-    }
-  });
+    });
+  }
 }

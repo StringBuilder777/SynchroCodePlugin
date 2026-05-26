@@ -265,7 +265,7 @@ export const tasksService = {
         fileUrl: uploadData.path,
         fileSizeBytes: file.size
       };
-      
+
       console.log("Notificando evidencia al backend...", payload);
       const res = await api.post<any>(`/tasks/${id}/evidence`, payload);
       results.push({
