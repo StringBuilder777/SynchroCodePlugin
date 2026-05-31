@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { GithubIcon } from "./GithubIcon";
 import { getSupabase } from "@/lib/supabase";
+import { normalizeAuthError } from "@/lib/errors";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -32,13 +33,31 @@ export function LoginForm() {
     setError("");
     setLoading(true);
 
-    const { error } = await getSupabase().auth.signInWithPassword({ email, password });
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    if (error) {
-      setError("Correo o contraseña incorrectos.");
+      try {
+        const { error } = await getSupabase().auth.signInWithPassword({ email, password });
+        clearTimeout(timeoutId);
+
+        if (error) {
+          const errorMessage = normalizeAuthError(error, "No se pudo iniciar sesión.");
+          setError(errorMessage);
+          setLoading(false);
+        } else {
+          window.location.href = "/proyectos";
+        }
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        const errorMessage = normalizeAuthError(fetchError, "Error de red. Intenta de nuevo.");
+        setError(errorMessage);
+        setLoading(false);
+      }
+    } catch (err) {
+      const errorMessage = normalizeAuthError(err, "No se pudo iniciar sesión.");
+      setError(errorMessage);
       setLoading(false);
-    } else {
-      window.location.href = "/proyectos";
     }
   }
 
@@ -70,7 +89,7 @@ export function LoginForm() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="ejemplo@empresa.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onInvalid={(e) => setSpanishValidationMessage(e.currentTarget)}
@@ -106,36 +125,10 @@ export function LoginForm() {
                 </a>
               </div>
 
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">
-                    O continúa con
-                  </span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleGitHubLogin}
-              >
-                <GithubIcon />
-                Continuar con GitHub
-              </Button>
             </form>
           </CardContent>
         </Card>
 
-        <p className="text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <a href="/setup" className="text-primary hover:underline">
-            Sign up
-          </a>
-        </p>
       </div>
     </div>
   );

@@ -125,7 +125,7 @@ class SynchroCodeProvider implements vscode.WebviewViewProvider {
       if (doc.getText() === content) {
         return; // No changes
       }
-      
+
       const fullRange = new vscode.Range(
         doc.positionAt(0),
         doc.positionAt(doc.getText().length)
@@ -137,6 +137,80 @@ class SynchroCodeProvider implements vscode.WebviewViewProvider {
       await vscode.workspace.applyEdit(edit);
     } catch (err) {
       console.error('[SynchroCode] Error aplicando actualización al editor:', err);
+    }
+  }
+
+  private async _handleUploadEvidence(webview: vscode.Webview, taskId: string) {
+    if (!taskId) return;
+
+    try {
+      const fileUris = await vscode.window.showOpenDialog({
+        canSelectMany: true,
+        openLabel: 'Subir como evidencia',
+        title: 'Selecciona archivos para evidencia',
+        filters: {
+          'Todos los archivos': ['*'],
+          'Imágenes': ['png', 'jpg', 'jpeg', 'gif', 'webp'],
+          'Documentos': ['pdf', 'doc', 'docx', 'txt'],
+          'Hojas de cálculo': ['xls', 'xlsx', 'csv'],
+        }
+      });
+
+      if (!fileUris || fileUris.length === 0) {
+        return; // User cancelled
+      }
+
+      // Mostrar progreso
+      await vscode.window.withProgress(
+        { location: vscode.ProgressLocation.Notification, title: 'Subiendo evidencia...' },
+        async () => {
+          for (const fileUri of fileUris) {
+            try {
+              const fileName = path.basename(fileUri.fsPath);
+              const fileBuffer = fs.readFileSync(fileUri.fsPath);
+              const fileSize = fileBuffer.length;
+
+              // Detectar MIME type basado en extensión
+              const ext = path.extname(fileName).toLowerCase();
+              const mimeMap: Record<string, string> = {
+                '.png': 'image/png',
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.gif': 'image/gif',
+                '.webp': 'image/webp',
+                '.pdf': 'application/pdf',
+                '.txt': 'text/plain',
+                '.doc': 'application/msword',
+                '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                '.xls': 'application/vnd.ms-excel',
+                '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              };
+              const mimeType = mimeMap[ext] || 'application/octet-stream';
+
+              // Convertir a base64 para enviar por postMessage
+              const base64Data = fileBuffer.toString('base64');
+
+              // Enviar al webview para que se procese como File
+              webview.postMessage({
+                command: 'uploadEvidenceFile',
+                taskId,
+                fileName,
+                fileSize,
+                mimeType,
+                base64Data,
+              });
+            } catch (err) {
+              console.error(`Error reading file ${fileUri.fsPath}:`, err);
+              vscode.window.showErrorMessage(`Error al leer archivo: ${path.basename(fileUri.fsPath)}`);
+            }
+          }
+        }
+      );
+
+      vscode.window.showInformationMessage(`Archivos de evidencia listos para subir`);
+    } catch (err) {
+      console.error('[SynchroCode] Error selecting evidence files:', err);
+      vscode.window.showErrorMessage('Error al seleccionar archivos de evidencia');
     }
   }
 
@@ -241,6 +315,10 @@ class SynchroCodeProvider implements vscode.WebviewViewProvider {
 
       case 'applyEditorUpdate':
         this._handleApplyEditorUpdate(msg.fileName, msg.content);
+        break;
+
+      case 'uploadEvidence':
+        this._handleUploadEvidence(webview, msg.taskId);
         break;
 
       default:
