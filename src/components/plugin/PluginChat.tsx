@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { chatService, type ChatChannel, type ChatMessage } from "@/lib/chat";
 import { usersService } from "@/lib/users";
 import { projectsService } from "@/lib/projects";
+import { notificationsService } from "@/lib/notifications";
 import { getInitials, getAvatarColor } from "@/components/proyectos/types";
 
 function formatTime(isoString: string | number | undefined) {
@@ -41,6 +42,7 @@ export function PluginChat() {
   const [isConnected, setIsConnected] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("Chat");
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const wsRef = useRef<WebSocket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -91,6 +93,15 @@ export function PluginChat() {
       }
     }
     init();
+
+    notificationsService.unreadCount()
+      .then(({ count }) => {
+        if (isMounted) setUnreadNotifications(count);
+      })
+      .catch(() => {
+        if (isMounted) setUnreadNotifications(0);
+      });
+
     return () => { isMounted = false; };
   }, []);
 
@@ -181,10 +192,12 @@ export function PluginChat() {
         <div className="flex items-center gap-1">
           <button onClick={() => navigate('notificaciones')} className="relative p-1.5 hover:bg-zinc-800 rounded transition-colors">
             <span className="material-symbols-outlined text-[20px] text-zinc-400">notifications</span>
-            <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-            </span>
+            {unreadNotifications > 0 && (
+              <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+            )}
           </button>
           <button className="p-1.5 hover:bg-zinc-800 rounded transition-colors text-zinc-400">
             <span className="material-symbols-outlined text-[20px]">more_vert</span>

@@ -1,31 +1,38 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { notificationsService, type AppNotification } from "@/lib/notifications";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+type NotificationKind = "task" | "role" | "comment" | "deadline" | "github";
 
-interface Notification {
-  id: string;
-  type: "task" | "role" | "comment" | "deadline" | "github";
-  title: string;
-  body: string;
-  time: string;
-  read: boolean;
-  href?: string;
+function kindFromType(typeId: number): NotificationKind {
+  if (typeId === 1 || typeId === 4) return "task";
+  if (typeId === 2 || typeId === 6) return "role";
+  if (typeId === 3) return "comment";
+  if (typeId === 5) return "github";
+  return "deadline";
 }
 
-// ── Mock data ──────────────────────────────────────────────────────────────────
+function hrefFor(notification: AppNotification) {
+  if (notification.relatedEntity === "project" && notification.relatedId) {
+    return `/proyectos/${notification.relatedId}`;
+  }
+  return undefined;
+}
 
-const INITIAL: Notification[] = [
-  { id: "n1", type: "task", title: "Tarea asignada", body: "Se te asignó \"Rediseño del navbar\" en Redesign Website.", time: "hace 5 min", read: false, href: "/proyectos/1" },
-  { id: "n2", type: "comment", title: "Nuevo comentario", body: "Elena Lopez comentó en \"Integración de íconos\": ¿Podemos revisar la paleta?", time: "hace 32 min", read: false, href: "/proyectos/1" },
-  { id: "n3", type: "github", title: "PR mergeado", body: "PR #12 \"feat: redesign homepage hero\" fue mergeado en Redesign Website.", time: "hace 2 h", read: false, href: "/proyectos/1" },
-  { id: "n4", type: "deadline", title: "Entrega próxima", body: "El proyecto \"Portal de clientes v2\" vence en 3 días.", time: "hace 4 h", read: true, href: "/proyectos/2" },
-  { id: "n5", type: "role", title: "Rol actualizado", body: "Tu rol cambió de \"Developer\" a \"Tech Lead\" en Portal de clientes v2.", time: "Ayer", read: true },
-];
+function formatRelative(value: string) {
+  const date = new Date(value);
+  const diffMs = Date.now() - date.getTime();
+  const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
+  if (diffMinutes < 1) return "Ahora";
+  if (diffMinutes < 60) return `hace ${diffMinutes} min`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `hace ${diffHours} h`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return "Ayer";
+  return `hace ${diffDays} días`;
+}
 
-// ── Icons ──────────────────────────────────────────────────────────────────────
-
-function NotifIcon({ type }: { type: Notification["type"] }) {
+function NotifIcon({ type }: { type: NotificationKind }) {
   const cls = {
     task: "bg-primary/15 text-primary",
     comment: "bg-amber-500/15 text-amber-500",
@@ -57,16 +64,29 @@ function NotifIcon({ type }: { type: Notification["type"] }) {
   );
 }
 
-// ── Main component ─────────────────────────────────────────────────────────────
-
 export function NotificationsDropdown() {
-  const [notifs, setNotifs] = useState<Notification[]>(INITIAL);
+  const [notifs, setNotifs] = useState<AppNotification[]>([]);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
 
-  const unread = notifs.filter((n) => !n.read).length;
+  const unread = useMemo(() => notifs.filter((n) => !n.isRead).length, [notifs]);
 
-  // Close on outside click
+  async function loadNotifications() {
+    try {
+      const items = await notificationsService.list();
+      setNotifs(items);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadNotifications();
+    const interval = window.setInterval(loadNotifications, 30000);
+    return () => window.clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     function handle(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -75,21 +95,29 @@ export function NotificationsDropdown() {
     return () => document.removeEventListener("mousedown", handle);
   }, []);
 
-  function markAll() {
-    setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+  async function markAll() {
+    await notificationsService.markAllRead();
+    setNotifs((prev) => prev.map((n) => ({ ...n, isRead: true })));
   }
 
-  function markOne(id: string) {
-    setNotifs((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
+  async function markOne(id: string) {
+    await notificationsService.markRead(id);
+    setNotifs((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
   }
 
-  function removeOne(id: string) {
+  async function removeOne(id: string) {
+    await notificationsService.remove(id);
     setNotifs((prev) => prev.filter((n) => n.id !== id));
+  }
+
+  async function openNotification(notification: AppNotification) {
+    if (!notification.isRead) await markOne(notification.id);
+    const href = hrefFor(notification);
+    if (href) window.location.href = href;
   }
 
   return (
     <div ref={ref} className="relative">
-      {/* Bell button */}
       <button
         onClick={() => setOpen((v) => !v)}
         className="relative flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
@@ -106,10 +134,8 @@ export function NotificationsDropdown() {
         )}
       </button>
 
-      {/* Dropdown panel */}
       {open && (
         <div className="absolute left-0 top-10 z-50 w-[380px] rounded-xl border bg-popover shadow-xl">
-          {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-sm">Notificaciones</span>
@@ -126,58 +152,62 @@ export function NotificationsDropdown() {
             )}
           </div>
 
-          {/* List */}
           <div className="max-h-[420px] overflow-y-auto divide-y">
-            {notifs.length === 0 ? (
-              <div className="py-10 text-center text-sm text-muted-foreground">
-                No tienes notificaciones
-              </div>
+            {loading ? (
+              <div className="py-10 text-center text-sm text-muted-foreground">Cargando notificaciones...</div>
+            ) : notifs.length === 0 ? (
+              <div className="py-10 text-center text-sm text-muted-foreground">No tienes notificaciones</div>
             ) : (
-              notifs.map((n) => (
-                <div
-                  key={n.id}
-                  className={`flex gap-3 px-4 py-3 hover:bg-accent/50 transition-colors group ${!n.read ? "bg-primary/5" : ""}`}
-                >
-                  <NotifIcon type={n.type} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className={`text-sm font-medium leading-tight ${!n.read ? "" : "text-muted-foreground"}`}>
-                        {n.title}
-                      </p>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {!n.read && (
+              notifs.map((n) => {
+                const kind = kindFromType(n.typeId);
+                const href = hrefFor(n);
+                return (
+                  <div
+                    key={n.id}
+                    role={href ? "button" : undefined}
+                    onClick={() => openNotification(n)}
+                    className={`flex gap-3 px-4 py-3 hover:bg-accent/50 transition-colors group ${href ? "cursor-pointer" : ""} ${!n.isRead ? "bg-primary/5" : ""}`}
+                  >
+                    <NotifIcon type={kind} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className={`text-sm font-medium leading-tight ${!n.isRead ? "" : "text-muted-foreground"}`}>
+                          {n.title}
+                        </p>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {!n.isRead && (
+                            <button
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                markOne(n.id);
+                              }}
+                              className="hidden group-hover:flex size-5 items-center justify-center rounded text-muted-foreground hover:text-foreground"
+                              title="Marcar como leído"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            </button>
+                          )}
                           <button
-                            onClick={() => markOne(n.id)}
-                            className="hidden group-hover:flex size-5 items-center justify-center rounded text-muted-foreground hover:text-foreground"
-                            title="Marcar como leído"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              removeOne(n.id);
+                            }}
+                            className="hidden group-hover:flex size-5 items-center justify-center rounded text-muted-foreground hover:text-destructive"
+                            title="Descartar"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                           </button>
-                        )}
-                        <button
-                          onClick={() => removeOne(n.id)}
-                          className="hidden group-hover:flex size-5 items-center justify-center rounded text-muted-foreground hover:text-destructive"
-                          title="Descartar"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                        </button>
+                        </div>
                       </div>
+                      {n.body && <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{n.body}</p>}
+                      <p className="text-[11px] text-muted-foreground/70 mt-1">{formatRelative(n.createdAt)}</p>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{n.body}</p>
-                    <p className="text-[11px] text-muted-foreground/70 mt-1">{n.time}</p>
+                    {!n.isRead && <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />}
                   </div>
-                  {!n.read && <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
-
-          {/* Footer */}
-          {notifs.length > 0 && (
-            <div className="border-t px-4 py-2.5 text-center">
-              <a href="#" className="text-xs text-primary hover:underline">Ver historial completo</a>
-            </div>
-          )}
         </div>
       )}
     </div>

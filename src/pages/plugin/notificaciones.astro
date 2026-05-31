@@ -7,10 +7,10 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
     <!-- Header -->
     <header class="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-950 shrink-0">
       <div class="flex items-center gap-2 overflow-hidden">
-        <div class="w-7 h-7 shrink-0 rounded-full bg-[#2e75b8]/10 border border-[#2e75b8]/20 flex items-center justify-center text-xs font-bold text-[#2e75b8]">AR</div>
+        <div id="currentUserInitials" class="w-7 h-7 shrink-0 rounded-full bg-[#2e75b8]/10 border border-[#2e75b8]/20 flex items-center justify-center text-xs font-bold text-[#2e75b8]">--</div>
         <div class="min-w-0">
-          <h2 class="text-[13px] font-semibold truncate text-slate-200">Alex Rivera</h2>
-          <p class="text-[10px] text-zinc-500 leading-none">Programador</p>
+          <h2 id="currentUserName" class="text-[13px] font-semibold truncate text-slate-200">Cargando...</h2>
+          <p id="currentUserRole" class="text-[10px] text-zinc-500 leading-none">Usuario</p>
         </div>
       </div>
       <button onclick="window.__navigate('tareas')" class="flex items-center gap-1 text-[11px] text-[#2e75b8] hover:underline font-medium bg-transparent border-0 cursor-pointer">
@@ -27,85 +27,20 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
     </div>
 
     <!-- Notification List -->
-    <div class="flex-1 overflow-y-auto hide-scrollbar">
-
-      <!-- Notif 1: Nueva tarea asignada (unread) -->
-      <div class="notif-item p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer" data-read="false">
-        <div class="mt-0.5 shrink-0 relative">
-          <div class="w-5 h-5 rounded-full bg-[#2e75b8]/20 text-[#2e75b8] flex items-center justify-center">
-            <span class="material-symbols-outlined text-[12px]">task_alt</span>
-          </div>
-          <span class="unread-dot absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500"></span>
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-[11px] text-zinc-200 leading-snug"><span class="font-bold">Nueva tarea asignada:</span> Revisar PR #48</p>
-          <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · Hace 5 min</p>
-        </div>
+    <div id="notificationsList" class="flex-1 overflow-y-auto hide-scrollbar">
+      <div id="loadingState" class="py-8 text-center">
+        <p class="text-[11px] text-zinc-500">Cargando notificaciones...</p>
       </div>
-
-      <!-- Notif 2: Cambio de rol (unread) -->
-      <div class="notif-item p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer" data-read="false">
-        <div class="mt-0.5 shrink-0 relative">
-          <div class="w-5 h-5 rounded-full bg-purple-900/20 text-purple-400 flex items-center justify-center">
-            <span class="material-symbols-outlined text-[12px]">shield</span>
-          </div>
-          <span class="unread-dot absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500"></span>
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-[11px] text-zinc-200 leading-snug">Tu rol cambió a <span class="font-bold text-zinc-100">Programador Senior</span></p>
-          <p class="text-[10px] text-zinc-500 mt-0.5">Admin · Hace 1 h</p>
-        </div>
+      <div id="emptyState" class="hidden py-10 text-center px-4">
+        <span class="material-symbols-outlined text-[34px] text-zinc-600 block mb-2">notifications_off</span>
+        <p class="text-[11px] text-zinc-500">No tienes notificaciones</p>
       </div>
-
-      <!-- Notif 3: Nueva tarea (unread) -->
-      <div class="notif-item p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer" data-read="false">
-        <div class="mt-0.5 shrink-0 relative">
-          <div class="w-5 h-5 rounded-full bg-[#2e75b8]/20 text-[#2e75b8] flex items-center justify-center">
-            <span class="material-symbols-outlined text-[12px]">task_alt</span>
-          </div>
-          <span class="unread-dot absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500"></span>
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-[11px] text-zinc-200 leading-snug"><span class="font-bold">Nueva tarea:</span> Documentar API Auth</p>
-          <p class="text-[10px] text-zinc-500 mt-0.5">Carlos Mendoza · Ayer</p>
-        </div>
-      </div>
-
-      <!-- Notif 4: Mención (read) -->
-      <div class="notif-item p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer opacity-60" data-read="true">
-        <div class="mt-0.5 shrink-0">
-          <div class="w-5 h-5 rounded-full bg-yellow-900/20 text-yellow-400 flex items-center justify-center">
-            <span class="material-symbols-outlined text-[12px]">alternate_email</span>
-          </div>
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-[11px] text-zinc-400 leading-snug"><span class="font-bold">Luisa García</span> te mencionó en SC-1024</p>
-          <p class="text-[10px] text-zinc-500 mt-0.5">Hace 2 días</p>
-        </div>
-      </div>
-
-      <!-- Notif 5: PR aprobado (read) -->
-      <div class="notif-item p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer opacity-60" data-read="true">
-        <div class="mt-0.5 shrink-0">
-          <div class="w-5 h-5 rounded-full bg-green-900/20 text-green-400 flex items-center justify-center">
-            <span class="material-symbols-outlined text-[12px]">check_circle</span>
-          </div>
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-[11px] text-zinc-400 leading-snug">PR #45 aprobado — <span class="font-bold">Refactorizar UI</span></p>
-          <p class="text-[10px] text-zinc-500 mt-0.5">Luisa García · Hace 3 días</p>
-        </div>
-      </div>
-
-      <!-- Empty padding -->
-      <div class="py-4 text-center">
-        <p class="text-[10px] text-zinc-600 uppercase tracking-widest">No hay más notificaciones</p>
-      </div>
+      <div id="notificationsItems"></div>
     </div>
 
     <!-- Footer -->
     <footer class="p-3 border-t border-zinc-800 flex items-center justify-between bg-zinc-900/50 shrink-0">
-      <span class="text-[10px] text-zinc-500">3 sin leer</span>
+      <span id="unreadFooter" class="text-[10px] text-zinc-500">0 sin leer</span>
       <div class="flex items-center gap-2">
         <span class="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
         <span class="text-[10px] text-zinc-400">Connected</span>
@@ -114,30 +49,157 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
   </div>
 
   <script>
-    // Mark all as read
-    document.getElementById('markAllBtn')?.addEventListener('click', () => {
-      document.querySelectorAll('.notif-item').forEach(item => {
-        item.dataset.read = 'true';
-        item.classList.add('opacity-60');
-        item.querySelector('.unread-dot')?.remove();
-      });
-      const footer = document.querySelector('footer span.text-zinc-500');
-      if (footer) footer.textContent = '0 sin leer';
+    import { notificationsService, type AppNotification } from '../../lib/notifications';
+    import { usersService } from '../../lib/users';
+
+    const currentUserInitials = document.getElementById('currentUserInitials');
+    const currentUserName = document.getElementById('currentUserName');
+    const currentUserRole = document.getElementById('currentUserRole');
+    const loadingState = document.getElementById('loadingState');
+    const emptyState = document.getElementById('emptyState');
+    const notificationsItems = document.getElementById('notificationsItems');
+    const unreadFooter = document.getElementById('unreadFooter');
+    const markAllBtn = document.getElementById('markAllBtn') as HTMLButtonElement | null;
+
+    let notifications: AppNotification[] = [];
+
+    function escapeHtml(value: string) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function initials(name: string) {
+      const parts = name.trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return '--';
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+
+    function iconFor(typeId: number) {
+      if (typeId === 1) return { icon: 'task_alt', cls: 'bg-[#2e75b8]/20 text-[#2e75b8]' };
+      if (typeId === 2) return { icon: 'shield', cls: 'bg-purple-900/20 text-purple-400' };
+      if (typeId === 3) return { icon: 'forum', cls: 'bg-yellow-900/20 text-yellow-400' };
+      if (typeId === 4) return { icon: 'published_with_changes', cls: 'bg-blue-900/20 text-blue-400' };
+      if (typeId === 5) return { icon: 'merge', cls: 'bg-green-900/20 text-green-400' };
+      if (typeId === 6) return { icon: 'screen_share', cls: 'bg-orange-900/20 text-orange-400' };
+      return { icon: 'notifications', cls: 'bg-zinc-800 text-zinc-400' };
+    }
+
+    function formatRelative(value: string) {
+      const date = new Date(value);
+      const diffMs = Date.now() - date.getTime();
+      const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
+      if (diffMinutes < 1) return 'Ahora';
+      if (diffMinutes < 60) return `Hace ${diffMinutes} min`;
+      const diffHours = Math.floor(diffMinutes / 60);
+      if (diffHours < 24) return `Hace ${diffHours} h`;
+      const diffDays = Math.floor(diffHours / 24);
+      if (diffDays === 1) return 'Ayer';
+      return `Hace ${diffDays} días`;
+    }
+
+    function updateUnreadCount() {
+      const unread = notifications.filter((notification) => !notification.isRead).length;
+      if (unreadFooter) unreadFooter.textContent = `${unread} sin leer`;
+      if (markAllBtn) markAllBtn.disabled = unread === 0;
+    }
+
+    function renderNotifications() {
+      if (!notificationsItems) return;
+
+      loadingState?.classList.add('hidden');
+      emptyState?.classList.toggle('hidden', notifications.length > 0);
+      updateUnreadCount();
+
+      notificationsItems.innerHTML = notifications.map((notification) => {
+        const icon = iconFor(notification.typeId);
+        const readClass = notification.isRead ? 'opacity-60' : '';
+        const title = escapeHtml(notification.title || notification.typeName || 'Notificación');
+        const body = notification.body ? `<p class="text-[11px] ${notification.isRead ? 'text-zinc-400' : 'text-zinc-200'} leading-snug mt-0.5">${escapeHtml(notification.body)}</p>` : '';
+        const dot = notification.isRead ? '' : '<span class="unread-dot absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500"></span>';
+
+        return `
+          <div class="notif-item p-3 border-b border-zinc-800 hover:bg-zinc-800/30 flex items-start gap-3 cursor-pointer ${readClass}"
+               data-id="${escapeHtml(notification.id)}"
+               data-related-entity="${escapeHtml(notification.relatedEntity || '')}"
+               data-related-id="${escapeHtml(notification.relatedId || '')}">
+            <div class="mt-0.5 shrink-0 relative">
+              <div class="w-5 h-5 rounded-full ${icon.cls} flex items-center justify-center">
+                <span class="material-symbols-outlined text-[12px]">${icon.icon}</span>
+              </div>
+              ${dot}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-[11px] ${notification.isRead ? 'text-zinc-400' : 'text-zinc-200'} leading-snug font-semibold">${title}</p>
+              ${body}
+              <p class="text-[10px] text-zinc-500 mt-0.5">${formatRelative(notification.createdAt)}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function markRead(id: string) {
+      const notification = notifications.find((item) => item.id === id);
+      if (!notification || notification.isRead) return;
+
+      await notificationsService.markRead(id);
+      notification.isRead = true;
+      renderNotifications();
+    }
+
+    async function loadCurrentUser() {
+      try {
+        const user = await usersService.getMe();
+        const displayName = user.name || user.email || 'Usuario';
+        if (currentUserName) currentUserName.textContent = displayName;
+        if (currentUserInitials) currentUserInitials.textContent = initials(displayName);
+        if (currentUserRole) currentUserRole.textContent = user.role || 'Usuario';
+      } catch {
+        if (currentUserName) currentUserName.textContent = 'Usuario';
+        if (currentUserInitials) currentUserInitials.textContent = 'U';
+        if (currentUserRole) currentUserRole.textContent = 'Usuario';
+      }
+    }
+
+    async function loadNotifications() {
+      loadingState?.classList.remove('hidden');
+      try {
+        notifications = await notificationsService.list();
+      } catch (error) {
+        notifications = [];
+      } finally {
+        renderNotifications();
+      }
+    }
+
+    markAllBtn?.addEventListener('click', async () => {
+      await notificationsService.markAllRead();
+      notifications = notifications.map((notification) => ({ ...notification, isRead: true }));
+      renderNotifications();
     });
 
-    // Mark individual as read on click
-    document.querySelectorAll('.notif-item').forEach(item => {
-      item.addEventListener('click', () => {
-        if (item.dataset.read === 'false') {
-          item.dataset.read = 'true';
-          item.classList.add('opacity-60');
-          item.querySelector('.unread-dot')?.remove();
-          // Update counter
-          const unread = document.querySelectorAll('.notif-item[data-read="false"]').length;
-          const footer = document.querySelector('footer span.text-zinc-500');
-          if (footer) footer.textContent = `${unread} sin leer`;
-        }
-      });
+    notificationsItems?.addEventListener('click', async (event) => {
+      const target = event.target as HTMLElement | null;
+      const item = target?.closest('.notif-item') as HTMLElement | null;
+      if (!item) return;
+
+      const id = item.dataset.id;
+      if (!id) return;
+      await markRead(id);
+
+      if (item.dataset.relatedEntity === 'task' && item.dataset.relatedId) {
+        localStorage.setItem('synchrocode-current-task-id', item.dataset.relatedId);
+        const navigate = (window as any).__navigate;
+        if (typeof navigate === 'function') navigate('tarea-detalle');
+      }
     });
+
+    loadCurrentUser();
+    loadNotifications();
   </script>
 </PluginLayout>
