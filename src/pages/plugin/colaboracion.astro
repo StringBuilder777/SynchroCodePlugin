@@ -14,7 +14,7 @@ import { CollabApp } from '../../components/collaborative/CollabApp';
       <div class="flex items-center gap-1">
         <button onclick="window.__navigate('notificaciones')" class="relative p-1.5 hover:bg-zinc-800 rounded transition-colors">
           <span class="material-symbols-outlined text-[20px] text-zinc-400">notifications</span>
-          <span class="absolute top-1.5 right-1.5 flex h-2 w-2">
+          <span id="notificationsBadge" class="absolute top-1.5 right-1.5 hidden h-2 w-2">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
           </span>
@@ -51,6 +51,7 @@ import { CollabApp } from '../../components/collaborative/CollabApp';
 
   <script>
     import { usersService } from '../../lib/users';
+    import { notificationsService } from '../../lib/notifications';
     
     usersService.getMe().then(user => {
       const header = document.getElementById('userNameHeader');
@@ -60,5 +61,15 @@ import { CollabApp } from '../../components/collaborative/CollabApp';
         initials.textContent = user.name.substring(0, 2).toUpperCase();
       }
     }).catch(console.error);
+
+    notificationsService.unreadCount().then(({ count }) => {
+      const badge = document.getElementById('notificationsBadge');
+      badge?.classList.toggle('hidden', count <= 0);
+      badge?.classList.toggle('flex', count > 0);
+    }).catch(() => {
+      const badge = document.getElementById('notificationsBadge');
+      badge?.classList.add('hidden');
+      badge?.classList.remove('flex');
+    });
   </script>
 </PluginLayout>

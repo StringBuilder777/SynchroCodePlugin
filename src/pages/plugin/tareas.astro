@@ -7,13 +7,13 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
     <!-- Header -->
     <header class="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-950 shrink-0">
       <div class="flex items-center gap-2 overflow-hidden">
-        <div class="w-7 h-7 shrink-0 rounded-full bg-[#2e75b8]/10 border border-[#2e75b8]/20 flex items-center justify-center text-xs font-bold text-[#2e75b8]">AR</div>
-        <h2 class="text-[13px] font-semibold truncate text-slate-200">Alex Rivera</h2>
+        <div id="currentUserInitials" class="w-7 h-7 shrink-0 rounded-full bg-[#2e75b8]/10 border border-[#2e75b8]/20 flex items-center justify-center text-xs font-bold text-[#2e75b8]">--</div>
+        <h2 id="currentUserName" class="text-[13px] font-semibold truncate text-slate-200">Cargando...</h2>
       </div>
       <div class="flex items-center gap-1">
         <button onclick="window.__navigate('notificaciones')" class="relative p-1.5 hover:bg-zinc-800 rounded transition-colors">
           <span class="material-symbols-outlined text-[20px] text-zinc-400">notifications</span>
-          <span class="absolute top-1.5 right-1.5 flex h-2 w-2">
+          <span id="notificationsBadge" class="absolute top-1.5 right-1.5 hidden h-2 w-2">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
           </span>
@@ -86,6 +86,8 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
 
   <script>
     import { tasksService, type PluginTask } from '../../lib/tasks';
+    import { usersService } from '../../lib/users';
+    import { notificationsService } from '../../lib/notifications';
 
     const filterBtns = Array.from(document.querySelectorAll<HTMLButtonElement>('.filter-btn'));
     const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
@@ -94,6 +96,9 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
     const emptyState = document.getElementById('emptyState');
     const loadingState = document.getElementById('loadingState');
     const backendError = document.getElementById('backendError');
+    const currentUserInitials = document.getElementById('currentUserInitials');
+    const currentUserName = document.getElementById('currentUserName');
+    const notificationsBadge = document.getElementById('notificationsBadge');
 
     let activeFilter = 'all';
     let searchQuery = '';
@@ -142,6 +147,13 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+    }
+
+    function initials(name: string) {
+      const parts = name.trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return '--';
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
 
     function formatDate(value: string) {
@@ -274,6 +286,31 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
       }
     }
 
+    async function loadCurrentUser() {
+      try {
+        const user = await usersService.getMe();
+        const displayName = user.name || user.email || 'Usuario';
+        if (currentUserName) currentUserName.textContent = displayName;
+        if (currentUserInitials) currentUserInitials.textContent = initials(displayName);
+      } catch (error) {
+        if (currentUserName) currentUserName.textContent = 'Usuario';
+        if (currentUserInitials) currentUserInitials.textContent = 'U';
+      }
+    }
+
+    async function loadUnreadNotifications() {
+      try {
+        const { count } = await notificationsService.unreadCount();
+        notificationsBadge?.classList.toggle('hidden', count <= 0);
+        notificationsBadge?.classList.toggle('flex', count > 0);
+      } catch {
+        notificationsBadge?.classList.add('hidden');
+        notificationsBadge?.classList.remove('flex');
+      }
+    }
+
+    loadCurrentUser();
+    loadUnreadNotifications();
     loadTasks();
   </script>
 </PluginLayout>

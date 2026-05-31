@@ -13,7 +13,7 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
       <div class="flex items-center gap-1">
         <button onclick="window.__navigate('notificaciones')" class="relative p-1.5 hover:bg-zinc-800 rounded transition-colors">
           <span class="material-symbols-outlined text-[20px] text-zinc-400">notifications</span>
-          <span class="absolute top-1.5 right-1.5 flex h-2 w-2 hidden" id="notificationsBadge">
+          <span class="absolute top-1.5 right-1.5 hidden h-2 w-2" id="notificationsBadge">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
           </span>
@@ -94,6 +94,7 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
     import { projectsService } from "../../lib/projects";
     import { tasksService } from "../../lib/tasks";
     import { usersService } from "../../lib/users";
+    import { notificationsService } from "../../lib/notifications";
     
     // Función para iniciales
     function getInitials(name: string) {
@@ -253,17 +254,31 @@ import PluginLayout from '../../layouts/PluginLayout.astro';
       }
     }
 
+    async function loadUnreadNotifications() {
+      try {
+        const { count } = await notificationsService.unreadCount();
+        const badge = document.getElementById("notificationsBadge");
+        badge?.classList.toggle("hidden", count <= 0);
+        badge?.classList.toggle("flex", count > 0);
+      } catch {
+        const badge = document.getElementById("notificationsBadge");
+        badge?.classList.add("hidden");
+        badge?.classList.remove("flex");
+      }
+    }
+
     // Inicializar
     document.addEventListener("DOMContentLoaded", () => {
       // Small delay to ensure auth is ready if needed
       setTimeout(loadDashboardData, 100);
+      setTimeout(loadUnreadNotifications, 100);
     });
 
     window.addEventListener('viewChanged', (e: any) => {
       if (e.detail?.view === 'dashboard') {
         loadDashboardData();
+        loadUnreadNotifications();
       }
     });
   </script>
 </PluginLayout>
-

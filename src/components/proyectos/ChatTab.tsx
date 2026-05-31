@@ -1,6 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { chatService, type ChatMessage, type ChatChannel } from "@/lib/chat";
 import { usersService } from "@/lib/users";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { TeamMember } from "./types";
 import { getInitials, getAvatarColor } from "./types";
 
@@ -20,11 +29,31 @@ function shouldGroupWithPrev(messages: ChatMessage[], index: number) {
 function formatTime(isoString: string | number | undefined) {
   if (!isoString) return "";
   try {
-    // Si es un número (timestamp de Unix en segundos o ms), lo convertimos
     const date = typeof isoString === 'number' 
       ? new Date(isoString * (isoString < 10000000000 ? 1000 : 1)) 
       : new Date(isoString);
-    return date.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
+    const diffMs = Date.now() - date.getTime();
+    const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
+    const time = date.toLocaleTimeString("es", { hour: "numeric", minute: "2-digit" });
+
+    if (diffMinutes < 1) return "Ahora";
+    if (diffMinutes < 60) return `hace ${diffMinutes} min`;
+
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    const sameDay = date.toDateString() === today.toDateString();
+    const previousDay = date.toDateString() === yesterday.toDateString();
+
+    if (sameDay) return `hoy ${time}`;
+    if (previousDay) return `ayer ${time}`;
+
+    return date.toLocaleDateString("es", {
+      day: "2-digit",
+      month: "short",
+      hour: "numeric",
+      minute: "2-digit",
+    });
   } catch {
     return "";
   }
@@ -60,6 +89,10 @@ export function ChatTab({ projectId, teamMembers = [] }: Props) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
+  const [createChannelOpen, setCreateChannelOpen] = useState(false);
+  const [newChannelName, setNewChannelName] = useState("");
+  const [createChannelError, setCreateChannelError] = useState("");
+  const [creatingChannel, setCreatingChannel] = useState(false);
   
   const wsRef = useRef<WebSocket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -139,16 +172,31 @@ export function ChatTab({ projectId, teamMembers = [] }: Props) {
   }, [messages]);
 
   async function handleCreateChannel() {
-    const name = prompt("Nombre del nuevo canal:");
-    if (!name || !name.trim()) return;
+    setCreateChannelOpen(true);
+  }
+
+  async function submitCreateChannel(event?: React.FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
+    const name = newChannelName.trim();
+    if (!name) {
+      setCreateChannelError("El nombre del canal es obligatorio.");
+      return;
+    }
+
+    setCreatingChannel(true);
+    setCreateChannelError("");
     try {
-      const newChannel = await chatService.createChannel(projectId, name.trim());
+      const newChannel = await chatService.createChannel(projectId, name);
       if (newChannel) {
         setChannels(prev => [...prev, newChannel]);
         setActiveChannel(newChannel);
       }
+      setNewChannelName("");
+      setCreateChannelOpen(false);
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Error al crear el canal");
+      setCreateChannelError(error instanceof Error ? error.message : "Error al crear el canal");
+    } finally {
+      setCreatingChannel(false);
     }
   }
 
@@ -179,6 +227,7 @@ export function ChatTab({ projectId, teamMembers = [] }: Props) {
   if (loading) return <div className="flex h-64 items-center justify-center text-muted-foreground">Cargando chat...</div>;
 
   return (
+    <>
     <div className="flex h-[calc(100vh-220px)] min-h-[480px] rounded-lg border overflow-hidden bg-background shadow-sm">
       {/* ── Channel list ─────────────────────────────────────────────────────── */}
       <div className="flex w-64 flex-col border-r bg-secondary/15">
@@ -284,5 +333,46 @@ export function ChatTab({ projectId, teamMembers = [] }: Props) {
         </div>
       </div>
     </div>
+
+    <Dialog open={createChannelOpen} onOpenChange={(open) => {
+      setCreateChannelOpen(open);
+      if (!open) {
+        setNewChannelName("");
+        setCreateChannelError("");
+        setCreatingChannel(false);
+      }
+    }}>
+      <DialogContent className="max-w-[420px]">
+        <DialogHeader>
+          <DialogTitle>Crear canal</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submitCreateChannel} className="space-y-4">
+          {createChannelError && (
+            <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {createChannelError}
+            </div>
+          )}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Nombre del canal</label>
+            <Input
+              autoFocus
+              placeholder="Ej: general"
+              value={newChannelName}
+              onChange={(event) => setNewChannelName(event.target.value)}
+              disabled={creatingChannel}
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setCreateChannelOpen(false)} disabled={creatingChannel}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={creatingChannel || !newChannelName.trim()}>
+              {creatingChannel ? "Creando..." : "Crear canal"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
