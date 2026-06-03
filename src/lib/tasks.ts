@@ -232,12 +232,12 @@ export const tasksService = {
   },
   updateStatus: async (id: string, statusKey: string) => {
     const statusId = STATUS_MAP_TO_ID[statusKey] || 1;
-    const res = await api.patch<any>(`/tasks/${id}/status/${statusId}`);
+    const res = await api.put<any>(`/tasks/${id}/status/${statusId}`);
     if (!res) return null;
     return fromBackend(res);
   },
   assignTask: async (id: string, userId: string) => {
-    const res = await api.patch<any>(`/tasks/${id}/assign/${userId}`);
+    const res = await api.put<any>(`/tasks/${id}/assign/${userId}`);
     return fromBackend(res);
   },
   uploadEvidence: async (id: string, files: File[]) => {

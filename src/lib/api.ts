@@ -33,6 +33,51 @@ function formatBackendError(method: string, url: string, status: number, error?:
   return new Error(error || `${method} ${url} → ${status}`);
 }
 
+function extractErrorMessage(payload: unknown): string | null {
+  if (typeof payload === "string") {
+    const trimmed = payload.trim();
+    if (!trimmed) return null;
+
+    if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
+      try {
+        return extractErrorMessage(JSON.parse(trimmed)) ?? trimmed;
+      } catch {
+        return trimmed;
+      }
+    }
+
+    return trimmed;
+  }
+
+  if (Array.isArray(payload)) {
+    for (const item of payload) {
+      const message = extractErrorMessage(item);
+      if (message) return message;
+    }
+    return null;
+  }
+
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  const record = payload as Record<string, unknown>;
+  const priorityKeys = ["message", "error_description", "error", "detail", "description", "title", "cause"];
+
+  for (const key of priorityKeys) {
+    if (!(key in record)) continue;
+    const message = extractErrorMessage(record[key]);
+    if (message) return message;
+  }
+
+  for (const value of Object.values(record)) {
+    const message = extractErrorMessage(value);
+    if (message) return message;
+  }
+
+  return null;
+}
+
 async function requestViaBridge<T>(
   method: string,
   url: string,
@@ -94,12 +139,18 @@ async function requestDirect<T>(method: string, url: string, headers: Record<str
 
   if (!res.ok) {
     let errorMsg = "";
+    const cloned = res.clone();
+
     try {
       const json = await res.json();
-      errorMsg = json.error || json.message || JSON.stringify(json);
-    } catch {
-      errorMsg = await res.text().catch(() => res.statusText);
+      errorMsg = extractErrorMessage(json) ?? "";
+    } catch {}
+
+    if (!errorMsg) {
+      const rawText = await cloned.text().catch(() => "");
+      errorMsg = extractErrorMessage(rawText) ?? rawText.trim();
     }
+
     throw formatBackendError(method, url, res.status, errorMsg);
   }
 

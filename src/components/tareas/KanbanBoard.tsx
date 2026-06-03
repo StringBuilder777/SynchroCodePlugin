@@ -24,6 +24,14 @@ function getInitials(name: string) {
   return name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (!(error instanceof Error) || !error.message) return fallback;
+  if (/→\s*403\b/.test(error.message) || /\b403\b/.test(error.message)) {
+    return "No tienes permiso para realizar esta acción.";
+  }
+  return error.message;
+}
+
 export function KanbanBoard({ projectId }: { projectId: string }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projectMembers, setProjectMembers] = useState<{ id: string; name: string }[]>([]);
@@ -34,10 +42,11 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
   const [uploadTaskId, setUploadTaskId] = useState<string | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [boardError, setBoardError] = useState("");
 
   const userMap = useMemo(() => {
-    return allUsers.reduce((acc, u) => ({ ...acc, [u.id]: u.name }), {} as Record<string, string>);
-  }, [allUsers]);
+    return [...projectMembers, ...allUsers].reduce((acc, u) => ({ ...acc, [u.id]: u.name }), {} as Record<string, string>);
+  }, [allUsers, projectMembers]);
 
   useEffect(() => {
     if (projectId) {
@@ -53,6 +62,7 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
       setTasks(data || []);
     } catch (error) {
       console.error("Error loading tasks:", error);
+      setBoardError(getErrorMessage(error, "No se pudieron cargar las tareas."));
     } finally {
       setIsLoading(false);
     }
@@ -60,14 +70,22 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
 
   async function loadMembers() {
     try {
-      const [membersData, usersData] = await Promise.all([
-        projectsService.getMembers(projectId),
-        usersService.getAll()
-      ]);
-      setAllUsers(usersData.map(u => ({ id: u.id, name: u.name })));
+      const membersData = await projectsService.getMembers(projectId);
+      let usersData: Awaited<ReturnType<typeof usersService.getAll>> = [];
+      try {
+        usersData = await usersService.getAll();
+      } catch {
+        usersData = [];
+      }
+
+      if (usersData.length > 0) {
+        setAllUsers(usersData.map(u => ({ id: u.id, name: u.name })));
+      }
+
       const mapped = membersData.map((m: any) => {
-        const u = usersData.find(user => user.id === m.userId);
-        return { id: m.userId, name: u?.name || "Usuario Desconocido" };
+        const memberId = m.userId || m.id;
+        const u = usersData.find(user => user.id === memberId);
+        return { id: memberId, name: m.name || u?.name || "Miembro del equipo" };
       });
       setProjectMembers(mapped);
     } catch (error) {
@@ -79,8 +97,10 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
     try {
       const newTask = await tasksService.createTask({ ...data, projectId });
       setTasks((prev) => [...prev, newTask]);
+      setBoardError("");
     } catch (error) {
       console.error("Error creating task:", error);
+      setBoardError(getErrorMessage(error, "No se pudo crear la tarea."));
     }
   }
 
@@ -89,8 +109,10 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
       const updatedTask = await tasksService.updateTask(id, data);
       setTasks((prev) => prev.map((t) => (t.id === id ? updatedTask : t)));
       if (detailTask?.id === id) setDetailTask(updatedTask);
+      setBoardError("");
     } catch (error) {
       console.error("Error updating task:", error);
+      setBoardError(getErrorMessage(error, "No se pudo actualizar la tarea."));
       throw error;
     }
   }
@@ -110,8 +132,10 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
         setTasks((prev) => prev.map((t) => (t.id === id ? updatedTask : t)));
         if (detailTask?.id === id) setDetailTask(updatedTask);
       }
+      setBoardError("");
     } catch (error) {
       console.error("Error updating status:", error);
+      setBoardError(getErrorMessage(error, "No se pudo cambiar el estado de la tarea."));
       // 4. Rollback on failure
       setTasks(previousTasks);
       // Optional: Refresh list to be absolute sure
@@ -124,8 +148,10 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
       await tasksService.deleteTask(id);
       setTasks((prev) => prev.filter((t) => t.id !== id));
       if (detailTask?.id === id) setDetailTask(null);
+      setBoardError("");
     } catch (error) {
       console.error("Error deleting task:", error);
+      setBoardError(getErrorMessage(error, "No se pudo eliminar la tarea."));
     }
   }
 
@@ -162,6 +188,14 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
+      {boardError && (
+        <div className="flex items-start justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <span>{boardError}</span>
+          <button className="text-xs underline-offset-2 hover:underline" onClick={() => setBoardError("")}>
+            Cerrar
+          </button>
+        </div>
+      )}
       <div className="flex justify-end">
         <Button onClick={() => setFormOpen(true)}>
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
